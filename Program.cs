@@ -5,7 +5,6 @@ using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.EventArgs;
 
-
 class Program
 {
     static async Task Main(string[] args)
@@ -21,14 +20,8 @@ class Program
         var slashCommands = discordClient.UseSlashCommands();
 
         slashCommands.RegisterCommands<SlashCommandsModule>();
-
-        // Obsługa zdarzenia po zalogowaniu bota
-        //discordClient.Ready += ClientOnReady;
-        
-        // Logowanie bota
         await discordClient.ConnectAsync();
 
-        // Oczekiwanie na zamknięcie aplikacji
         Console.WriteLine("Enter a random key on your fucking keyboard to exit this shit...");
         Console.ReadKey();
     }
@@ -96,7 +89,7 @@ public class SlashCommandsModule : ApplicationCommandModule
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣤⣶⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣶⠟⠋⠀⠀⠹⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⡾⠟⠁⠀⠀⠀⠀⠀⢻⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣶⡿⠛\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣿⠋⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⡀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣶⡿⠋⠁⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣤⣶⣿⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣿⣿⠿⠿⣶⣶⣦⣤⣴⣿⠟⠁⠀⠀⠀⢀⡼\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⡟⠿⠁⠀⠀⠀⠀⠀⠀⠀⠀⢠⠞⠁⡴⠋⠀⠀⢀⡴⠋⢈⡿⠛⠁⠀⠀⠀⠀⢀⠎⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣾⡧⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠋⠀⡜⠀⠀⠀⣠⠋⠀⢠⠞⠀⠀⠀⠀⠀⠀⠀⠼⠤⡄\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⡿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⣄⡼⠁⠀⠀⢰⠃⠀⣠⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠔⠁\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣶⢿⣿⠟⠀⠀⠀⠀⠀⣠⣤⣄⠀⠀⠀⠀⠀⠉⠀⠀⠀⠀⠘⠷⠴⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢦\r\n⠀⠀⠀⠀⠀⣰⡟⠛⢿⣶⣤⣼⡇⠀⠈⠀⠀⠀⠀⢠⣾⣿⣿⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⢀⣴⡶⠿⠿⠀⠀⠘⠿⣿⣿⣷⣦⡀⠀⠀⠀⠀⣿⣿⣿⣿⣿⠇⠀⣀⡤⠤⠤⠤⠤⣀⡀⠀⠀⠀⠀⢀⣶⣿⣿⣿⣿⣆⠀⠀⠀⠀⠀\r\n⣴⡿⠋⠀⠀⠀⠀⠀⠀⠀⠙⢦⣉⠻⢿⣷⣦⣀⠀⠘⠻⠿⠟⠋⡠⢾⠁⠀⠀⠀⠀⠀⠀⠈⠐⠄⠀⠀⢸⣿⣿⣿⣿⣿⣿⡆⠀⠀⠀⠀\r\n⣿⡇⠀⢀⡾⢻⣿⣷⡀⠀⠀⢰⠌⣑⠦⣌⠛⠿⣷⣦⣀⠀⠀⢰⠁⠘⣄⠀⢀⠶⡀⠀⠀⢀⡄⠈⡆⠀⠘⢿⣿⣿⣿⣿⡿⠃⠀⠀⠀⠀\r\n⣿⠃⠀⢸⣇⣿⣿⣿⡇⠀⠀⢸⠀⠈⠙⠺⢽⣦⣌⡙⠻⣷⣦⣄⠀⠀⠀⠉⠀⠀⠙⠒⠒⠉⠀⠀⢱⠀⠀⠀⠙⠛⠛⠉⠀⠀⠀⠀⠀⠀\r\n⣿⠀⠀⠀⠙⠿⠿⠋⠀⠀⠀⢸⠀⠀⠀⠀⠀⠈⠙⠂⠀⠀⣿⠻⣿⣦⣄⠀⠀⠀⠀⠀⠀⠀⠀⢠⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⣿⡄⠀⠀⠀⢀⣄⠀⢀⡤⠒⠺⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⢹⠉⡿⢿⣦⣤⣶⣶⣦⣤⡐⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⣿⡇⠀⣦⡀⠘⠛⢀⡼⠀⠀⢠⠀⠈⡗⣦⣄⡀⠀⠀⠀⠀⣿⠀⢸⠀⡇⢸⡏⢹⠿⣄⡉⠛⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⣿⣧⣀⠀⠉⠓⠚⠉⠀⣠⣤⣤⣀⠀⡇⣇⢸⠉⡗⠦⢄⣀⢻⣦⣼⡀⡇⢸⠀⢸⠀⣿⢉⠒⠾⣷⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⢻⣿⣌⡙⠲⢤⣴⠶⠚⠧⣌⡛⠿⣿⣷⣷⣸⠀⡇⠀⠀⠈⠙⠺⣝⡻⢿⣾⣦⣸⠀⣿⠀⠉⠀⠸⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⠈⠙⠻⢿⣶⣬⣙⣶⣤⣈⠙⠳⢤⣉⡛⠿⣷⣷⣄⡀⠀⠀⠀⠀⠈⠙⠻⢿⣿⣷⣿⠀⠀⠀⠀⢿⡇⠀⠀⠀⠀⠠⡀⠀⠀⠀⢀⣀⣤\r\n⠀⠀⠀⠀⠀⠈⠙⠻⢿⣿⣿⣧⣄⣀⡈⠙⠳⢦⣍⠛⢿⣷⣦⣄⠀⠀⠀⠀⠀⠈⠙⠻⢤⡀⠀⠀⢸⡇⠐⢦⡀⠀⢀⡌⠲⣄⣠⡼⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢹⣿⠟⠛⠛⠛⠷⢶⣌⣙⡶⠬⠷⠞⠛⠳⠶⠶⣦⣤⣀⠀⠀⠉⠓⣶⣾⣿⠀⠀⠉⠉⠉⠀⠀⠀⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⡇⠀⠀⠀⠀⠀⠀⣿⠋⠀⠀⠀⣠⠔⠁⠀⠀⠀⠉⠻⢷⣦⡀⢀⣿⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⢀⠜⠁⠀⠀⠀⠀⠀⠀⠀⠀⠙⢿⣾⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⡿⠿⠀⠀⠀⠀⠀⠀⠀⠻⠦⠠⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠮⠤⠈⠻⠷⠤⠤⠤⠤⠄⠀⠀⠀⠀⠀⠀⠀⠀"));
     }
     [SlashCommand("facepalm", "The most basic command")]
-    public async Task FacepalCommand(InteractionContext ctx)
+    public async Task FacepalmCommand(InteractionContext ctx)
     {
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣤⣄⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⡏⠀⣽⠶⣄⠀⠀⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⠁⡇⠀⡏⠀⣽⣄⡀⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⠀⡇⠀⡇⠀⡏⠈⡇⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣤⣼⠀⡇⠀⠑⠀⡇⠀⣿⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⡇⣽⠀⠛⠀⠀⠀⠀⠀⢻⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⡇⣿⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣤⣤⡤⠤⢤⣤⣤⣄⡀⣀⡀⠀⠀⢀⣸⣷⣇⣀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⠖⠋⠉⠁⠀⠀⠀⠀⠀⠀⠀⠈⠙⠻⣿⡷⠻⣏⣀⣠⠌⠙⢷⡀⠀⠀⠀⠀⢸⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡶⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠃⠀⠉⠀⡼⠀⠀⠈⢿⡀⠀⠀⢀⣼⠃⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠸⠷⠤⣄⣀⣼⠗⠚⠛⠋⠁⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣾⡟⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⠀⢀⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣈⣙⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⣄⠀⠀⠀⣼⠀⠀⠀⢀⡴⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡦⢤⣿⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣯⣻⡶⣤⣹⣤⣄⣠⡎⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡾⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⡴⠶⢖⣲⣶⠞⠋⠁⠀⠀⠈⠉⢉⣬⢿⡋⠉⠁⠀⠀⠀⠀⠀⠀⠀⣠⡞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⣀⡴⠚⢉⣠⡴⠞⠛⠉⠀⠀⠀⠀⠀⠀⠀⠀⡞⠁⠀⠉⠀⠀⠀⠀⠀⠀⠀⢀⡼⢯⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⠀⠀⠀⢀⣴⠞⢁⣴⠞⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⡇⠀⠀⠀⠀⠀⠀⠀⠀⣀⡴⠋⠀⢸⡏⠉⠙⠓⠶⣤⣀⠀⠀⠀⠀⢀⣀⣀⣀⣀⣀⣀\r\n⠀⠀⠀⣠⡞⣡⠾⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡴⠞⠉⠉⠂⠀⠀⠀⠀⠀⠀⣰⠋⠀⠀⢠⠟⠀⠀⠀⠀⠀⠀⠉⠛⠛⠛⠛⠉⠉⠉⠉⠋⠉⠉\r\n⠀⠀⣰⠏⡼⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⠞⢹⡇⠀⠀⠀⠀⠀⠀⠀⠀⢀⡼⠃⠀⣠⡴⠋⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⣰⠏⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⠾⣯⡀⠀⠘⢧⣀⠀⠀⠀⢀⣀⣤⣾⣯⡤⠶⠛⠉⠀⠀⠀⠀⠀⠀⢀⡔⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⢠⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠶⠋⠁⠀⠈⠻⣄⠀⠀⠈⠙⠛⠋⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠸⣧⡀⠀⠀⠀⠀⠀⠀⣀⡴⠟⠁⠀⠀⠀⠀⠀⠀⠙⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⠈⠙⠓⠶⠶⠶⠶⠛⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠒⠒⠚⣿⠛⠛⠛⠛⠛⠛⠛⠛⠛\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\r\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"));
     }
@@ -113,20 +106,48 @@ public class SlashCommandsModule : ApplicationCommandModule
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{message}"));
     }
 
+    [SlashCommand("sendembed", "Send's your custom embed")]
+    public async Task SendEmbedCommand(InteractionContext ctx,
+    [Option("title", "Title of your embed (text)")] string title,
+    [Option("description", "Description of your embed (text)")] string description,
+    [Option("thumbnail", "Miniature of your embed (url)")] string thumbnail = null,
+    [Option("footer", "Footer of your embed (text)")] string footer = null,
+    [Option("imageurl", "Image of your embed (url)")] string imageUrl = null)
+    {
+        var embed = new DiscordEmbedBuilder
+        {
+            Title = title,
+            Description = description,
+            Color = DiscordColor.Blurple, 
+        };
+
+        if (!string.IsNullOrEmpty(thumbnail))
+        {
+            embed.WithThumbnail(thumbnail);
+        }
+        if (!string.IsNullOrEmpty(footer))
+        {
+            embed.WithFooter(footer);
+        }
+        if (!string.IsNullOrEmpty(imageUrl))
+        {
+            embed.WithImageUrl(imageUrl);
+        }
+
+        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+            .AddEmbed(embed.Build()));
+    }
+
     [SlashCommand("dice", "Return the random number (defalut from 1 to 6)")]
     public async Task RandomCommand(InteractionContext ctx,
         [Option("min", "Minimum value (default: 1)")] string minStr = "1",
         [Option("max", "Maximum value (default: 6)")] string maxStr = "6")
     {
-        // Sprawdzenie, czy min i max są w prawidłowym zakresie
-
         int min = int.Parse(minStr);
         int max = int.Parse(maxStr);
-        // Generowanie losowej liczby w podanym zakresie
         Random random = new Random();
         int randomNumber = random.Next(min, max + 1);
 
-        // Wysłanie wyniku jako wiadomość slash
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,new DiscordInteractionResponseBuilder().WithContent($"Dice saying: {randomNumber}"));
     }
 
@@ -141,75 +162,103 @@ public class SlashCommandsModule : ApplicationCommandModule
     }
 
     [SlashCommand("iq", "Returns your small iq")]
-    public async Task iq(InteractionContext ctx)
+    public async Task IqCommand(InteractionContext ctx)
     {
         Random random = new Random();
         int iq = random.Next(-100, 200);
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Your iq: {iq}"));
     }
 
-    [SlashCommand("help", "All commands - help center")]
-    public async Task HelpCommand(InteractionContext ctx)
+    // help center
+    [SlashCommand("commands", "Show's all commands")]
+    public async Task Commands(InteractionContext ctx)
     {
-        // Tworzenie obiektu DiscordEmbedBuilder
-        var embed = new DiscordEmbedBuilder
+        var commandshelpEmbed = new DiscordEmbedBuilder
         {
-            Title = "Help - Commands list",
-            Description = "All commands from Mandarynka bot.",
-            Color = DiscordColor.Orange, // Kolor ramki
+            Title = "Command's list",
+            Description = "Commands for Mandarynka bot.",
+            Color = DiscordColor.Orange,
         };
 
-        // Dodawanie pól do embed
-        embed.AddField("/help", "List of all commands");
-        embed.AddField("/basic", "Start basic command");
-        embed.AddField("/dice", "Returns random number");
-        embed.AddField("/clear", "Clear amount of messeges");
-        embed.AddField("/iq", "Return's your small iq");
-        embed.AddField("/coin", "Return's head or eagle");
-        embed.AddField("/mandarynka", "Send's mandarynka art");
-        embed.AddField("/gigacahd", "Send's gigachad art");
-        embed.AddField("/nope", "Send's enginner tf2 art");
-        embed.AddField("/ohitsyours", "Send's Oh it's your art");
-        embed.AddField("/siuuu", "Send's siuu art");
-        embed.AddField("/wut", "Send's wut the hel art");
-        embed.AddField("/send", "Send's your message form bot");
-        embed.AddField("/hello", "Send's special hello message form bot");
-        
+        commandshelpEmbed.AddField("BASIC COMMANDS", "----------");
 
-        // Dodawanie obrazka do embed
-        embed.WithImageUrl("https://www.ladne-rzeczy.com.pl/wp-content/uploads/2023/01/Zabawna-Mandarynka-20-cm-550x550.jpg");
+        commandshelpEmbed.AddField("/basic", "Send's basic message", inline: true);
+        commandshelpEmbed.AddField("/send", "Send's your message", inline: true);
+        commandshelpEmbed.AddField("/sendembed", "Send's your custom embed", inline: true);
+        commandshelpEmbed.AddField("/ping", "Show's bot ping", inline: true);
+        commandshelpEmbed.AddField("/serverinfo", "Show's info about server", inline: true);
+        commandshelpEmbed.AddField("/verify", "Verify yourself", inline: true);
 
-        // Wysłanie embed jako odpowiedzi na komendę slash
+        commandshelpEmbed.AddField("FUN ", "----------");
+
+        commandshelpEmbed.AddField("/dice", "Send's random number (defalut: from 1 to 6)", inline: true);
+        commandshelpEmbed.AddField("/coin", "Send's eagle or head", inline: true);
+        commandshelpEmbed.AddField("/iq", "Return's your very small iq", inline: true);
+        commandshelpEmbed.AddField("/randomgif", "Send's random gif", inline: true);
+        commandshelpEmbed.AddField("/randommeme", "Send's random meme", inline: true);
+
+        commandshelpEmbed.AddField("ADMIN ", "----------");
+
+        commandshelpEmbed.AddField("/clear", "Clear amount of messeges", inline: true);
+        commandshelpEmbed.AddField("/config_botname", "Set's new server bot name", inline: true);
+        commandshelpEmbed.AddField("/config_resetbotname", "Set's new server bot name", inline: true);
+
+        commandshelpEmbed.WithImageUrl("https://www.ladne-rzeczy.com.pl/wp-content/uploads/2023/01/Zabawna-Mandarynka-20-cm-550x550.jpg");
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
-            .AddEmbed(embed.Build()));
+            .AddEmbed(commandshelpEmbed.Build()));
     }
 
+    [SlashCommand("arts", "Show's art's commands")]
+    public async Task Arts(InteractionContext ctx)
+    {
+        var artsEmbed = new DiscordEmbedBuilder
+        {
+            Title = "Art's list",
+            Description = "Arts from Mandarynka bot.",
+            Color = DiscordColor.Magenta,
+        };
+
+
+        artsEmbed.AddField("ARTS ", "----------");
+
+        artsEmbed.AddField("/amogus", "Send's amogus art",inline:true);
+        artsEmbed.AddField("/gigachad", "Send's gigachad art", inline: true);
+        artsEmbed.AddField("/wut", "Send's wut art", inline: true);
+        artsEmbed.AddField("/facepalm", "Send's facepalm art", inline: true);
+        artsEmbed.AddField("/siuuu", "Send's siuuu art", inline: true);
+        artsEmbed.AddField("/nope", "Send's nope art", inline: true);
+        artsEmbed.AddField("/trollface", "Send's trollface art", inline: true);
+        artsEmbed.AddField("/berry", "Send's berry art", inline: true);
+        artsEmbed.AddField("/mandarynka", "Send's mandarynka art", inline: true);
+
+        artsEmbed.WithImageUrl("https://www.ladne-rzeczy.com.pl/wp-content/uploads/2023/01/Zabawna-Mandarynka-20-cm-550x550.jpg");
+        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+            .AddEmbed(artsEmbed.Build()));
+    }
 
     [SlashCommand("serverinfo", "Server info")]
-    public async Task ServerInfo(InteractionContext ctx)
+    public async Task ServerInfoCommand(InteractionContext ctx)
     {
-        // Tworzenie obiektu DiscordEmbedBuilder
-        var embed = new DiscordEmbedBuilder
+        var serverinfoEmbed = new DiscordEmbedBuilder
         {
             Title = $"{ctx.Guild.Name}",
             Color = DiscordColor.Green,
         };
 
-        embed.AddField("Server name:", $"{ctx.Guild.Name}");
-        embed.AddField("Owner:", $"{ctx.Guild.Owner.DisplayName}");
-        embed.AddField("Member's count:", $"{ctx.Guild.MemberCount}");
+        serverinfoEmbed.AddField("Server name:", $"{ctx.Guild.Name}");
+        serverinfoEmbed.AddField("Owner:", $"{ctx.Guild.Owner.DisplayName}");
+        serverinfoEmbed.AddField("Member's count:", $"{ctx.Guild.MemberCount}");
 
 
-        embed.WithImageUrl($"{ctx.Guild.IconUrl}");
+        serverinfoEmbed.WithImageUrl($"{ctx.Guild.IconUrl}");
 
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
-            .AddEmbed(embed.Build()));
+            .AddEmbed(serverinfoEmbed.Build()));
     }
 
     [SlashCommand("clear", "Clear a specified number of messages")]
     public async Task ClearCommand(InteractionContext ctx,
-        [Option("amount", "Number of messages to clear")]
-        string amountStr)
+        [Option("amount", "Number of messages to clear")]string amountStr)
     {
         // Upewnij się, że użytkownik ma odpowiednie uprawnienia do zarządzania wiadomościami
         if (!ctx.Member.Permissions.HasPermission(Permissions.Administrator))
@@ -241,8 +290,7 @@ public class SlashCommandsModule : ApplicationCommandModule
     [SlashCommand("randommeme", "Send's random meme")]
     public async Task SendMemeCommand(InteractionContext ctx)
     {
-        // Tutaj dodaj logikę do pobrania losowego mema z bazy memów
-        string randomMemeUrl = GetRandomMemeUrl(); // Załóżmy, że masz funkcję do pobierania URL-a losowego mema
+        string randomMemeUrl = GetRandomMemeUrl(); 
 
         var embed = new DiscordEmbedBuilder
         {
@@ -257,8 +305,8 @@ public class SlashCommandsModule : ApplicationCommandModule
     [SlashCommand("randomgif", "Send's random gif")]
     public async Task SendGifCommand(InteractionContext ctx)
     {
-        // Tutaj dodaj logikę do pobrania losowego mema z bazy memów
-        string randomGifUrl = GetRandomGifUrl();// Załóżmy, że masz funkcję do pobierania URL-a losowego mema
+        
+        string randomGifUrl = GetRandomGifUrl();
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{randomGifUrl}"));
 
     }
@@ -346,5 +394,30 @@ public class SlashCommandsModule : ApplicationCommandModule
 
         return gifBase[resultInt];
     }
+    [SlashCommand("ping", "Show's bot ping")]
+    public async Task PingCommand(InteractionContext ctx)
+    {
+        var ping = ctx.Client.Ping;
+        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+            .WithContent($"Pong! : {ping}ms"));
+    }
 
+    [SlashCommand("verify", "Be verified")]
+    public async Task VerifyUser(InteractionContext ctx)
+    {
+        var verifyRole = ctx.Guild.Roles.Values.FirstOrDefault(role => role.Name == "Verified");
+
+        if (verifyRole == null)
+        {
+            await ctx.Guild.CreateRoleAsync("Verified", color:DiscordColor.DarkGreen);
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true)
+            .WithContent("You aren't verifed jet. Please try again (type: /verify)"));
+            return;
+        }
+        await ctx.Member.GrantRoleAsync(verifyRole);
+
+        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true)
+            .WithContent("Now you are verified"));
+        await ctx.DeferAsync();
+    }
 }
