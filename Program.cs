@@ -4,6 +4,8 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.EventArgs;
+using Newtonsoft.Json.Linq;
+using System.Xml.Linq;
 
 class Program
 {
@@ -12,9 +14,10 @@ class Program
         // Inicjalizacja klienta Discord i modułu obsługującego polecenia slash
         var discordClient = new DiscordClient(new DiscordConfiguration
         {
-            Token = "OTc5MDA0ODQ1MjkxODg0NTg0.GsJwpe.90S6qAaaygAiUeaAZnp0KHpJNmcH0GvjdgI5oA",
+            Token = "token",
             TokenType = TokenType.Bot,
-            Intents = DiscordIntents.Guilds | DiscordIntents.GuildMessages
+            Intents = DiscordIntents.All
+
         });
 
         var slashCommands = discordClient.UseSlashCommands();
@@ -28,7 +31,6 @@ class Program
 }
 public class SlashCommandsModule : ApplicationCommandModule
 {
-
     [SlashCommand("basic", "The most basic command")]
     public async Task BasicCommand(InteractionContext ctx)
     {
@@ -106,36 +108,69 @@ public class SlashCommandsModule : ApplicationCommandModule
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{message}"));
     }
 
-    [SlashCommand("sendembed", "Send's your custom embed")]
-    public async Task SendEmbedCommand(InteractionContext ctx,
+    [SlashCommand("annoucment", "Send's your custom embed")]
+    public async Task AnnoucmentCommand(InteractionContext ctx,
     [Option("title", "Title of your embed (text)")] string title,
     [Option("description", "Description of your embed (text)")] string description,
     [Option("thumbnail", "Miniature of your embed (url)")] string thumbnail = null,
     [Option("footer", "Footer of your embed (text)")] string footer = null,
-    [Option("imageurl", "Image of your embed (url)")] string imageUrl = null)
+    [Option("imageurl", "Image of your embed (url)")] string imageUrl = null,
+    [Option("field1", "Separe title & description with ;| Example: My Title;Here is my description")] string field1 = null,
+    [Option("field2", "Separe title & description with ;| Example: My Title;Here is my description")] string field2 = null,
+    [Option("field3", "Separe title & description with ;| Example: My Title;Here is my description")] string field3 = null,
+    [Option("field4", "Separe title & description with ;| Example: My Title;Here is my description")] string field4 = null,
+    [Option("field5", "Separe title & description with ;| Example: My Title;Here is my description")] string field5 = null,
+    [Option("color", "Set's the annoucment color with geting a role color")] DiscordRole color = null)
     {
-        var embed = new DiscordEmbedBuilder
+        if (!ctx.Member.Permissions.HasPermission(Permissions.Administrator)) return;
+        var annoucmentEmbed = new DiscordEmbedBuilder
         {
             Title = title,
             Description = description,
             Color = DiscordColor.Blurple, 
         };
+        if (!string.IsNullOrEmpty(field1))
+        {
+            var fieldStrings = field1.Split(';');
+            string name = fieldStrings[0];
+            string value = fieldStrings[1];
+            annoucmentEmbed.AddField(name, value, false);
+        }
+        if (!string.IsNullOrEmpty(field2))
+        {
+            var fieldStrings = field2.Split(';');
+            string name = fieldStrings[0];
+            string value = fieldStrings[1];
+            annoucmentEmbed.AddField(name, value, false);
+        }
+        if (!string.IsNullOrEmpty(field3))
+        {
+            var fieldStrings = field3.Split(';');
+            string name = fieldStrings[0];
+            string value = fieldStrings[1];
+            annoucmentEmbed.AddField(name, value, false);
+        }
+        if (!string.IsNullOrEmpty(field4))
+        {
+            var fieldStrings = field4.Split(';');
+            string name = fieldStrings[0];
+            string value = fieldStrings[1];
+            annoucmentEmbed.AddField(name, value, false);
+        }
+        if (!string.IsNullOrEmpty(field5))
+        {
+            var fieldStrings = field5.Split(';');
+            string name = fieldStrings[0];
+            string value = fieldStrings[1];
+            annoucmentEmbed.AddField(name, value, false);
+        }
 
-        if (!string.IsNullOrEmpty(thumbnail))
-        {
-            embed.WithThumbnail(thumbnail);
-        }
-        if (!string.IsNullOrEmpty(footer))
-        {
-            embed.WithFooter(footer);
-        }
-        if (!string.IsNullOrEmpty(imageUrl))
-        {
-            embed.WithImageUrl(imageUrl);
-        }
-
+        if (!string.IsNullOrEmpty(thumbnail)) annoucmentEmbed.WithThumbnail(thumbnail);
+        if (!string.IsNullOrEmpty(footer)) annoucmentEmbed.WithFooter(footer);
+        if (!string.IsNullOrEmpty(imageUrl)) annoucmentEmbed.WithImageUrl(imageUrl);
+        if (color != null) annoucmentEmbed.WithColor(color.Color);
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
-            .AddEmbed(embed.Build()));
+            .AddEmbed(annoucmentEmbed.Build()));
     }
 
     [SlashCommand("dice", "Return the random number (defalut from 1 to 6)")]
@@ -184,26 +219,29 @@ public class SlashCommandsModule : ApplicationCommandModule
 
         commandshelpEmbed.AddField("/basic", "Send's basic message", inline: true);
         commandshelpEmbed.AddField("/send", "Send's your message", inline: true);
-        commandshelpEmbed.AddField("/sendembed", "Send's your custom embed", inline: true);
+        commandshelpEmbed.AddField("/send_dm", "Send's your message to the user", inline: true);
+        
         commandshelpEmbed.AddField("/ping", "Show's bot ping", inline: true);
-        commandshelpEmbed.AddField("/serverinfo", "Show's info about server", inline: true);
+        commandshelpEmbed.AddField("/server_info", "Show's info about server", inline: true);
+        commandshelpEmbed.AddField("/user_info", "Show's info about user", inline: true);
         commandshelpEmbed.AddField("/verify", "Verify yourself", inline: true);
 
         commandshelpEmbed.AddField("FUN ", "----------");
 
         commandshelpEmbed.AddField("/dice", "Send's random number (defalut: from 1 to 6)", inline: true);
+        commandshelpEmbed.AddField("/rickroll", "Send's user DM with rickroll >:)", inline: true);
         commandshelpEmbed.AddField("/coin", "Send's eagle or head", inline: true);
         commandshelpEmbed.AddField("/iq", "Return's your very small iq", inline: true);
-        commandshelpEmbed.AddField("/randomgif", "Send's random gif", inline: true);
-        commandshelpEmbed.AddField("/randommeme", "Send's random meme", inline: true);
+        commandshelpEmbed.AddField("/random_gif", "Send's random gif", inline: true);
 
         commandshelpEmbed.AddField("ADMIN ", "----------");
 
         commandshelpEmbed.AddField("/clear", "Clear amount of messeges", inline: true);
+        commandshelpEmbed.AddField("/annoucment", "Send's annoucment", inline: true);
+        commandshelpEmbed.AddField("/copy_role", "Copy role", inline: true);
         commandshelpEmbed.AddField("/config_botname", "Set's new server bot name", inline: true);
         commandshelpEmbed.AddField("/config_resetbotname", "Set's new server bot name", inline: true);
 
-        commandshelpEmbed.WithImageUrl("https://www.ladne-rzeczy.com.pl/wp-content/uploads/2023/01/Zabawna-Mandarynka-20-cm-550x550.jpg");
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
             .AddEmbed(commandshelpEmbed.Build()));
     }
@@ -231,12 +269,12 @@ public class SlashCommandsModule : ApplicationCommandModule
         artsEmbed.AddField("/berry", "Send's berry art", inline: true);
         artsEmbed.AddField("/mandarynka", "Send's mandarynka art", inline: true);
 
-        artsEmbed.WithImageUrl("https://www.ladne-rzeczy.com.pl/wp-content/uploads/2023/01/Zabawna-Mandarynka-20-cm-550x550.jpg");
+
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
             .AddEmbed(artsEmbed.Build()));
     }
 
-    [SlashCommand("serverinfo", "Server info")]
+    [SlashCommand("server_info", "Server info")]
     public async Task ServerInfoCommand(InteractionContext ctx)
     {
         var serverinfoEmbed = new DiscordEmbedBuilder
@@ -256,22 +294,41 @@ public class SlashCommandsModule : ApplicationCommandModule
             .AddEmbed(serverinfoEmbed.Build()));
     }
 
+    [SlashCommand("user_info", "Pokaż informacje o użytkowniku.")]
+    public async Task UserInfoCommand(InteractionContext ctx,
+    [Option("user", "User | Exaple: @Mandarynka")] DiscordUser user)
+    {
+        var userinfoEmbed = new DiscordEmbedBuilder
+        {
+            Title = $"Info about {user.Username}",
+            Color = DiscordColor.Green, 
+        };
+
+        userinfoEmbed.AddField("User name", user.Mention, false);
+        userinfoEmbed.AddField("User ID", user.Id.ToString(), false);
+        userinfoEmbed.AddField("Avatar URL", user.AvatarUrl, true);
+        userinfoEmbed.AddField("Is bot ?", user.IsBot.ToString(), false);
+
+        userinfoEmbed.WithThumbnail(user.GetAvatarUrl(ImageFormat.Auto));
+
+        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+            .AddEmbed(userinfoEmbed.Build()));
+    }
+
     [SlashCommand("clear", "Clear a specified number of messages")]
     public async Task ClearCommand(InteractionContext ctx,
         [Option("amount", "Number of messages to clear")]string amountStr)
     {
-        // Upewnij się, że użytkownik ma odpowiednie uprawnienia do zarządzania wiadomościami
-        if (!ctx.Member.Permissions.HasPermission(Permissions.Administrator))
+        if (!ctx.Member.Permissions.HasPermission(Permissions.ManageMessages))
         {
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral(true)
                     .WithContent("You don't have permission to manage messages."));
             return;
         }
-
         int amount = int.Parse(amountStr);
-        // Ogranicz liczbę wiadomości do usuwania
-        amount = Math.Min(amount, 100); // Discord ogranicza usuwanie do 100 wiadomości naraz
+
+        amount = Math.Min(amount, 100); 
 
         var channel = ctx.Channel;
 
@@ -281,34 +338,13 @@ public class SlashCommandsModule : ApplicationCommandModule
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
             new DiscordInteractionResponseBuilder().AsEphemeral(true)
                 .WithContent($"Cleared {amount} messeges"));
-        //await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-        // new DiscordInteractionResponseBuilder()
-        //   .WithContent($"Cleared {messages} messeges"));
     }
 
-
-    [SlashCommand("randommeme", "Send's random meme")]
-    public async Task SendMemeCommand(InteractionContext ctx)
-    {
-        string randomMemeUrl = GetRandomMemeUrl(); 
-
-        var embed = new DiscordEmbedBuilder
-        {
-            Title = "That's your random meme",
-            ImageUrl = randomMemeUrl,
-            Color = DiscordColor.Teal
-        };
-
-        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(embed));
-    }
-
-    [SlashCommand("randomgif", "Send's random gif")]
+    [SlashCommand("random_gif", "Send's random gif")]
     public async Task SendGifCommand(InteractionContext ctx)
     {
-        
         string randomGifUrl = GetRandomGifUrl();
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{randomGifUrl}"));
-
     }
 
     [SlashCommand("config_botname", "Change bot name")]
@@ -356,23 +392,6 @@ public class SlashCommandsModule : ApplicationCommandModule
                     .WithContent("You don't have permission to manage messages."));
         }
     }
-
-    private string GetRandomMemeUrl()
-    {
-        Random rand = new Random();
-        string[] memBase =
-        {
-            "https://pbs.twimg.com/media/F0OBAWxXgAcwoaf.jpg",
-            "https://images3.memedroid.com/images/UPLOADED546/644113b1485ac.jpeg",
-            "https://miro.medium.com/v2/resize:fit:1080/1*dFgrBrC0iZzXaePa9T0cQg.png",
-            "https://i.pinimg.com/736x/21/f5/07/21f5073071e7b4139a950f1c5f164994.jpg",
-            "https://cdn.discordapp.com/attachments/1111987746416885851/1163538213684662382/Mein_kampf.png?ex=653ff067&is=652d7b67&hm=0baa492dcffbcda53df7ac562168e051d709e196b88711e0e350b8abb78c2865&",
-            "https://cdn.discordapp.com/attachments/1111987746416885851/1150098086593564722/SPOILER_SPOILER_d8718ca90aeeabd04f96c0ca6bf901ad.jpg?ex=653d2fcf&is=652abacf&hm=62f38e9b087ba16ad62246b615bea73b185eb7e55d26d7a11e378affe9ae514e&",
-        };
-        var resultInt = rand.Next(memBase.Length);
-
-        return memBase[resultInt];
-    }
     private string GetRandomGifUrl()
     {
         Random rand = new Random();
@@ -419,5 +438,76 @@ public class SlashCommandsModule : ApplicationCommandModule
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true)
             .WithContent("Now you are verified"));
         await ctx.DeferAsync();
+    }
+
+
+    [SlashCommand("credits", "Show's credits")]
+    public async Task Credits(InteractionContext ctx)
+    {
+        var creditsEmbed = new DiscordEmbedBuilder
+        {
+            Title = "Credits",
+            Description = " ",
+            Color = DiscordColor.Red,
+        };
+        int guildCount = ctx.Client.ShardCount;
+
+        creditsEmbed.AddField("I'm on ", guildCount.ToString() + "servers");
+
+        creditsEmbed.AddField("Created by: ", "BiznesBear");
+        creditsEmbed.AddField("Beta tester's: ", $"Cringe2137\nDorain28029");
+        creditsEmbed.AddField("Beta tester's: ", $"Cringe2137\nDorain28029");
+
+        var dcserverButton = new DiscordLinkButtonComponent("https://discord.gg/c9VExDxEde", "Discord server");
+        var addButton = new DiscordLinkButtonComponent("https://discord.com/api/oauth2/authorize?client_id=979004845291884584&permissions=8&scope=applications.commands%20bot", "Add me to your server");
+        var rickrollButton = new DiscordLinkButtonComponent("https://youtu.be/dQw4w9WgXcQ?si=aXEKxX-SaPoSTijV", "Click me");
+
+        //creditsEmbed.WithUrl("https://discord.gg/c9VExDxEde");
+        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+            .AddEmbed(creditsEmbed.Build()).AddComponents(dcserverButton,addButton,rickrollButton));
+    }
+
+
+    [SlashCommand("rickroll", "Send a direct message to a user.")]
+    public async Task SendRickroll(InteractionContext ctx, [Option("user", "Rickroll that user")] DiscordUser user)
+    {
+        var server = ctx.Guild;
+        var member = await server.GetMemberAsync(user.Id);
+        await member.SendMessageAsync("https://youtu.be/dQw4w9WgXcQ?si=aXEKxX-SaPoSTijV");
+        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Sended >:)").AsEphemeral(true));
+    }
+
+    [SlashCommand("send_dm", "Send a direct message to a user.")]
+    public async Task SendDM(InteractionContext ctx, [Option("user", "Sending message to ")] DiscordUser user, [Option("message","Enter a text")] string dmMessage)
+    {
+        var server = ctx.Guild;
+        var member = await server.GetMemberAsync(user.Id);
+        await member.SendMessageAsync($"{dmMessage}");
+        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Sended >:)").AsEphemeral(true));
+    }
+
+    [SlashCommand("copy_role", "Copy a role (admin only)")]
+    public async Task CopyRole(InteractionContext ctx, [Option("role", "Role to copy")] DiscordRole role, [Option("name", "Name for the copied role")] string roleName)
+    {
+        if (!ctx.Member.Permissions.HasPermission(Permissions.Administrator)) return;
+
+        if (role == null)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                .WithContent("Please specify a valid role to copy.").AsEphemeral(true));
+            return;
+        }
+        try
+        {
+            var copiedRole = await ctx.Guild.CreateRoleAsync(roleName, role.Permissions, role.Color, role.IsHoisted, role.IsMentionable);
+
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                .WithContent($"Role '{role.Name}' has been copied to '{copiedRole.Name}' with a new name.").AsEphemeral(true));
+        }
+        catch (Exception ex)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                .WithContent($"An error occurred: {ex.Message}").AsEphemeral(true));
+        }
     }
 }
