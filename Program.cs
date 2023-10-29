@@ -1,17 +1,13 @@
 ﻿using System;
-using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
-using DSharpPlus.EventArgs;
-using Newtonsoft.Json.Linq;
-using System.Xml.Linq;
 
 class Program
 {
     static async Task Main(string[] args)
     {
-        // Inicjalizacja klienta Discord i modułu obsługującego polecenia slash
+
         var discordClient = new DiscordClient(new DiscordConfiguration
         {
             Token = "token",
