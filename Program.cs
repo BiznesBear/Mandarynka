@@ -448,11 +448,12 @@ public class SlashCommandsModule : ApplicationCommandModule
         };
         int guildCount = ctx.Client.ShardCount;
 
-        creditsEmbed.AddField("I'm on ", guildCount.ToString() + "servers");
+        creditsEmbed.AddField("I'm on ", guildCount.ToString() + " servers");
 
         creditsEmbed.AddField("Created by: ", "BiznesBear");
+        creditsEmbed.AddField("Made in: ", "C# - DSharpPlus");
         creditsEmbed.AddField("Beta tester's: ", $"Cringe2137\nDorain28029");
-        creditsEmbed.AddField("Beta tester's: ", $"Cringe2137\nDorain28029");
+
 
         var dcserverButton = new DiscordLinkButtonComponent("https://discord.gg/c9VExDxEde", "Discord server");
         var addButton = new DiscordLinkButtonComponent("https://discord.com/api/oauth2/authorize?client_id=979004845291884584&permissions=8&scope=applications.commands%20bot", "Add me to your server");
