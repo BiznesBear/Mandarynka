@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Text;
+﻿using System.Text;
 using Newtonsoft.Json;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -9,57 +7,53 @@ using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.EventArgs;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
-using Google.Apis.YouTube.v3;
 
+// TODO:
+// fix /clear ephermal
+// test defalut role
+// fix /commands {config} (beacose the commands in embed doesn't work propertly)
 
 
 class Program
 {
+    private static readonly string token = "OTc5MDA0ODQ1MjkxODg0NTg0.GsJwpe.90S6qAaaygAiUeaAZnp0KHpJNmcH0GvjdgI5oA";
 
-    // lista rzeczy do zrobienia:
-    // stats channels - bany,ilość użytkowników, ilość członków online {Po częsci ukończone, bo się nieaktualizuje, i tworzy nowy kanał zamiast ustawiać inny}
-    // dotart nie powinnien wysyłać bot tylko użytkownik (wiadomość)
-
-
-    // future roadmap:
-    // add intergration with DotBread
-    // add website with panel and dc account connecting
-    // add youtube api (sending videos and seraching)
-    // add more fun commands like /bake /cake /lvl /gift
-    // meybe givaways ?
-    // meybe radio on vc ?
+    static void NewConsole() { Console.WriteLine($"||WELCOME TO MANDARYNKA CONSOLE\n||CREATED BY: (C)BIZNESBEAR 2023\n||PLEASE ENTER A COMMAND OR TYPE help FOR COMMAND LIST\n||Environment version: {Environment.Version}"); }
 
     static async Task Main(string[] args)
     {
         var discordClient = new DiscordClient(new DiscordConfiguration
         {
-            Token = "OTc5MDA0ODQ1MjkxODg0NTg0.GsJwpe.90S6qAaaygAiUeaAZnp0KHpJNmcH0GvjdgI5oA",
+            Token = token,
             TokenType = TokenType.Bot,
             Intents = DiscordIntents.All,
-            MinimumLogLevel = Microsoft.Extensions.Logging.LogLevel.Error, 
+            MinimumLogLevel = Microsoft.Extensions.Logging.LogLevel.Critical, 
         });
 
+        //slash commands register
         var slashCommands = discordClient.UseSlashCommands();
-        slashCommands.RegisterCommands<SlashCommandsModule>();
+        slashCommands.RegisterCommands<BasicCommands>();
+        slashCommands.RegisterCommands<ConfigCommands>();
+
+
         await discordClient.ConnectAsync();
         var interactivity = discordClient.UseInteractivity(new InteractivityConfiguration
         {
             Timeout = TimeSpan.FromMinutes(1)
         });
 
-
-        SlashCommandsModule module = new SlashCommandsModule();
+        // events
         discordClient.GuildCreated += async (s, e) =>
         {
             await e.Guild.Owner.SendMessageAsync($"Hello! If you see that message you will probaly added me to your server! If you need </help:1181276215122866318> please use that command.\nIf you don't know how to use any of commands please check the documentation");
         };
         discordClient.GuildBanAdded += async (s, e) =>
         {
-            GuildSettings guildSettings = module.GetGuildSettings(e.Guild.Id);
+            GuildSettings guildSettings = GuildSaver.GetGuildSettings(e.Guild.Id);
             
-            if (guildSettings.EventChannelID != 0)
+            if (guildSettings.EventChannelId != 0)
             {
-                var eventChannel = e.Guild.GetChannel(guildSettings.EventChannelID);
+                var eventChannel = e.Guild.GetChannel(guildSettings.EventChannelId);
                 var banAddedEmbed = new DiscordEmbedBuilder();
                 banAddedEmbed.WithColor(DiscordColor.Red);
                 banAddedEmbed.WithTitle("Ban");
@@ -79,11 +73,11 @@ class Program
         };
         discordClient.GuildBanRemoved+= async (s, e) =>
         {
-            GuildSettings guildSettings = module.GetGuildSettings(e.Guild.Id);
+            GuildSettings guildSettings = GuildSaver.GetGuildSettings(e.Guild.Id);
 
-            if (guildSettings.EventChannelID != 0)
+            if (guildSettings.EventChannelId != 0)
             {
-                var eventChannel = e.Guild.GetChannel(guildSettings.EventChannelID);
+                var eventChannel = e.Guild.GetChannel(guildSettings.EventChannelId);
                 var banAddedEmbed = new DiscordEmbedBuilder();
                 banAddedEmbed.WithColor(DiscordColor.Green);
                 banAddedEmbed.WithTitle("Unban");
@@ -104,21 +98,63 @@ class Program
         };
         discordClient.GuildMemberAdded += async (s, e) =>
         {
-            GuildSettings guildSettings = module.GetGuildSettings(e.Guild.Id);
-
-            if (guildSettings.EventChannelID != 0)
+            GuildSettings guildSettings = GuildSaver.GetGuildSettings(e.Guild.Id);
+            var defalutRole = e.Guild.GetRole(guildSettings.DefalutRoleId);
+            if (guildSettings.WelcomeChannelId != 0)
             {
-                var eventChannel = e.Guild.GetChannel(guildSettings.EventChannelID);
+                var eventChannel = e.Guild.GetChannel(guildSettings.WelcomeChannelId);
+
                 string message = $"Welcome {e.Member.Mention} to our server! We hope that you have fun! ";
-                if (e.Guild.RulesChannel != null) message += $"\nPlease check the {e.Guild.RulesChannel} channel.";
-                await eventChannel.SendMessageAsync(message);
+
+                if (e.Guild.RulesChannel != null) message += $"\nPlease check the {e.Guild.RulesChannel.Mention} channel.";
+
+                var newMemberEmbed = new DiscordEmbedBuilder()
+                {
+                    Title="New member",
+                    Description=message,
+                    Color=DiscordColor.Blue
+                };
+                newMemberEmbed.WithThumbnail(e.Member.AvatarUrl);
+                await eventChannel.SendMessageAsync(newMemberEmbed);
+            }
+            if(defalutRole != null) await e.Member.GrantRoleAsync(defalutRole);
+        };
+        discordClient.MessageCreated += async (s, e) =>
+        {
+            DiscordMember member = await e.Guild.GetMemberAsync(e.Author.Id);
+            string[] bannedWords =
+            {
+                "@everyone",
+                "https://discord.com/invite"
+            };
+            foreach (string word in bannedWords) if (e.Message.Content.Contains("@everyone") && !member.Permissions.HasPermission(Permissions.Administrator)) await e.Message.DeleteAsync();
+        };
+        discordClient.MessageUpdated += async (s, e) =>
+        {
+            GuildSettings guildSettings = GuildSaver.GetGuildSettings(e.Guild.Id);
+
+            if (guildSettings.EventChannelId != 0)
+            {
+                var eventChannel = e.Guild.GetChannel(guildSettings.EventChannelId);
+
+                string message = $"has edited message on {e.Channel.Mention}";
+                var updatedMessageEmbed = new DiscordEmbedBuilder()
+                {
+                    Title = $"{e.Author.Username}",
+                    Description = message,
+                    Color = DiscordColor.Black
+                };
+                updatedMessageEmbed.AddField("Before", e.MessageBefore.Content);
+                updatedMessageEmbed.AddField("After", e.Message.Content);
+                updatedMessageEmbed.WithThumbnail(e.Author.AvatarUrl);
+                await eventChannel.SendMessageAsync(updatedMessageEmbed);
             }
         };
         discordClient.ComponentInteractionCreated += async (s, e) =>
         {
             if (e.Id == "help_dropdown")
             {
-                await new SlashCommandsModule().HandleDropdown(e);
+                await new BasicCommands().HandleDropdown(e);
             }
 
             await e.Interaction.CreateResponseAsync(
@@ -127,15 +163,16 @@ class Program
             .WithContent($"{e.Interaction.Data.CustomId}").AsEphemeral(true));
         };
 
+
+
+        // console things
         Console.Title = "Mandarynka Console";
         NewConsole();
         while(true)
         {
             var output = Console.ReadLine();
             if (output == null) return;
-            var raw = output.ToLower().Split(" ");
-            
-            
+            var raw = output.ToLower().Split(" ");            
             switch (raw[0])
             {
                 case "help":
@@ -173,6 +210,7 @@ class Program
                             Console.WriteLine("Connected");
                             break;
                         default:
+                            Console.WriteLine("Nothing happends");
                             break;
                     }
                     break;
@@ -184,32 +222,15 @@ class Program
                     break;
             }
         }
+
+
     }
-    static void NewConsole()
-    {
-        Console.WriteLine($"||WELCOME TO MANDARYNKA CONSOLE\n||CREATED BY: (C)BIZNESBEAR 2023\n||PLEASE ENTER A COMMAND OR TYPE help FOR COMMAND LIST\n||Environment version: {Environment.Version}");
-    } 
+    
+
 }
-
-//JSON DATA 
-//JSON DATA 
-//JSON DATA 
-
-public class GuildSettings
+// basic commands (for users)
+public class BasicCommands : ApplicationCommandModule
 {
-    public ulong Id { get; set; }
-    public ulong VerifyRoleId { get; set; }
-    public ulong EventChannelID { get; set; }
-    public required string Code { get; set; }
-    public required string CodeContent { get; set; }
-}
-
-public class SlashCommandsModule : ApplicationCommandModule
-{
-    //special 
-    //special 
-    //special 
-
     [SlashCommand("dotart", "Sends dot art")]
     public async Task DotArtCommand(InteractionContext ctx,
         [Choice("Hello","0")]
@@ -257,6 +278,7 @@ public class SlashCommandsModule : ApplicationCommandModule
     [Option("field3", "Separe title & description with ;| Example: My Title;Here is my description")] string field3 = "",
     [Option("field4", "Separe title & description with ;| Example: My Title;Here is my description")] string field4 = "",
     [Option("field5", "Separe title & description with ;| Example: My Title;Here is my description")] string field5 = "",
+    [Option("field6", "Separe title & description with ;| Example: My Title;Here is my description")] string field6 = "",
     [Choice("Black","0;0;0")]
     [Choice("Gray","128;128;128")]
     [Choice("White","255;255;255")]
@@ -311,6 +333,13 @@ public class SlashCommandsModule : ApplicationCommandModule
             string value = fieldStrings[1];
             customEmbed.AddField(name, value, false);
         }
+        if (!string.IsNullOrEmpty(field6))
+        {
+            var fieldStrings = field6.Split(';');
+            string name = fieldStrings[0];
+            string value = fieldStrings[1];
+            customEmbed.AddField(name, value, false);
+        }
 
         if (!string.IsNullOrEmpty(thumbnail)) customEmbed.WithThumbnail(thumbnail);
         if (!string.IsNullOrEmpty(footer)) customEmbed.WithFooter(footer);
@@ -349,35 +378,37 @@ public class SlashCommandsModule : ApplicationCommandModule
             await message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":no_entry_sign:"));
         }
 
-        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder().AsEphemeral(true).WithContent("Created !"));
+        await ctx.CreateResponseAsync("Created!",true);
     }
 
-    [SlashCommand("code", "Unlock code")]
-    public async Task CodeCommand(InteractionContext ctx,
-        [Option("code", "Code")] string code)
+    [SlashRequireGuild]
+    [SlashCommand("verify", "Be verified")]
+    public async Task VerifyUser(InteractionContext ctx)
     {
-        if (ctx.Guild == null) return;
-        var guildSettings = GetGuildSettings(ctx.Guild.Id);
-        if (guildSettings.Code != null)
+        var guildSettings = GuildSaver.GetGuildSettings(ctx.Guild.Id);
+
+        var verifyRole = ctx.Guild.GetRole(guildSettings.VerifyRoleId);
+        if (verifyRole == null)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{ctx.User.Mention} use {guildSettings.Code}:\n{guildSettings.CodeContent}").AsEphemeral(true));
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true)
+            .WithContent("Verification is not enabled on this server"));
+            return;
         }
-        else
-        {
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Code doesn't exits").AsEphemeral(true));
+        var hasRole = ctx.Member.Roles.Any(role => role.Id == guildSettings.VerifyRoleId);
+        if (hasRole) {
+            await ctx.CreateResponseAsync("You are already verificated", true);
+            return;
         }
+        
+        await ctx.Member.GrantRoleAsync(verifyRole);
+        await ctx.CreateResponseAsync("Verifyed succesful",true);
     }
 
-    //info center
-    //info center
-    //info center
-
-
+    // info commands 
     [SlashCommand("server_info", "Server info")]
+    [SlashRequireGuild]
     public async Task ServerInfoCommand(InteractionContext ctx)
     {
-        if (ctx.Guild == null) return;
         var serverinfoEmbed = new DiscordEmbedBuilder
         {
             Title = $"{ctx.Guild.Name}",
@@ -445,10 +476,10 @@ public class SlashCommandsModule : ApplicationCommandModule
     }
 
     [SlashCommand("role_info", "Shows informations about the role")]
+    [SlashRequireGuild]
     public async Task RoleInfoCommand(InteractionContext ctx,
     [Option("role", "Role")] DiscordRole role)
     {
-        if (ctx.Guild == null) return;
         var roleInfoEmbed = new DiscordEmbedBuilder
         {
             Title = $"{role.Name}",
@@ -470,40 +501,229 @@ public class SlashCommandsModule : ApplicationCommandModule
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
             .AddEmbed(roleInfoEmbed.Build()));
     }
+
     [SlashCommand("ping", "Show's bot ping")]
     public async Task PingCommand(InteractionContext ctx)
     {
         var ping = ctx.Client.Ping;
-        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
-            .WithContent($"Pong! : {ping}ms").AsEphemeral(true));
+        await ctx.CreateResponseAsync($"Pong! Current ping is {ping} ms",true);
     }
 
-    // suggests
-    // suggests
-    // suggests 
-    // suggests
-    
-    [SlashCommand("suggest", "Sends your suggest on the official discord bot server ")]
-    public async Task SuggestDotArt(InteractionContext ctx, [Option("suggest","Suggest message here")] string suggestMessage)
+
+    [SlashRequireGuild]
+    [SlashRequirePermissions(Permissions.ManageMessages)]
+    [SlashCommand("clear", "Clears amount of messages")]
+    public async Task Clear(InteractionContext ctx,
+        [Option("amount","Amount of messages to clear")] string amountStr)
     {
-        var guild = await ctx.Client.GetGuildAsync(1162036287642021939);
-        var channel = guild.GetChannel(1180918365485813780);
-        if(suggestMessage.Length > 20) await channel.SendMessageAsync($"From {ctx.User.Username}:\n{suggestMessage}");
-        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Sended !").AsEphemeral(true));
+        DiscordFollowupMessageBuilder followup = new DiscordFollowupMessageBuilder().AsEphemeral(true);
+        _ = int.TryParse(amountStr, out int amount);
+        var channel = ctx.Channel;        
+        var messages = await ctx.Channel.GetMessagesAsync(amount);
+        if (amount < 1 || amount > 100)
+        {
+            await ctx.FollowUpAsync(followup.WithContent("Incorrect amount of messages (please select from 1 to 100)").AsEphemeral(true));
+            return;
+        }
+        await ctx.DeferAsync(true);
+        await channel.DeleteMessagesAsync(messages);
+        await ctx.FollowUpAsync(followup.WithContent($"Deleted {messages.Count} messages").AsEphemeral(true));
+    }
+
+    [SlashCommand("help","Bot help center")]
+    public async Task Help(InteractionContext ctx)
+    {
+        await ctx.DeferAsync();
+        var helpOptions = new List<DiscordSelectComponentOption>()
+        {
+            new DiscordSelectComponentOption(
+                "Commands",
+                "help_commands",
+                "If you don't know!"
+                ),
+            new DiscordSelectComponentOption(
+                "Bot functions",
+                "help_func",
+                "Read how it works!"),
+            new DiscordSelectComponentOption(
+                "Admin",
+                "help_admin",
+                "Admin commands and tricks!"),
+            new DiscordSelectComponentOption(
+                "Bot setuping",
+                "help_setuping",
+                "Try fantastic server functions!"),
+        };
+        var helpDropdown = new DiscordSelectComponent("help_dropdown", null, helpOptions, false,1,1);
+        
+        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("How can i help you today?").AddComponents(helpDropdown));
+    }
+
+    [SlashCommand("commands", "Show's all commands")]
+    public async Task Commands(InteractionContext ctx,
+        [Choice("Common","common")]
+        [Choice("Config","config")]
+        [Option("helpType","idk")] string option)
+    {
+        var commandsEmbed = new DiscordEmbedBuilder();
+        bool inline = false;
+        switch (option)
+        {
+            case "common":
+                commandsEmbed = new DiscordEmbedBuilder
+                {
+                    Title = "Common commands",
+                    Color = DiscordColor.Gray,
+                };
+                commandsEmbed.AddField("</help:1216767203043442840>", "** **", inline);
+                commandsEmbed.AddField("</commands:1216767203043442841>", "** **", inline);
+                commandsEmbed.AddField("</ping:1216767202565296238>", "** **", inline);
+                commandsEmbed.AddField("</credits:1216767203043442843>", "** **", inline);
+                commandsEmbed.AddField("</verify:1216767202565296233>", "** **", inline);
+                commandsEmbed.AddField("</user_info:1216767202565296236>", "** **", inline);
+                commandsEmbed.AddField("</server_info:1216767202565296235>", "** **", inline);
+                commandsEmbed.AddField("</role_info:1216767202565296237>", "** **", inline);
+                commandsEmbed.AddField("</dotart:1216767202565296231>", "** **", inline);
+                commandsEmbed.AddField("</embed:1216767202565296232>", "** **", inline);
+                break;
+            case "config":
+                commandsEmbed = new DiscordEmbedBuilder
+                {
+                    Title = "Config commands",
+                    Color = DiscordColor.Magenta,
+                };
+                commandsEmbed.AddField("</current:1216767203043442846>", "** **", inline);
+                commandsEmbed.AddField("</resetvalue:1216767203043442846>", "** **", inline);
+                commandsEmbed.AddField("</botname:1216767203043442846>", "** **", inline);
+                commandsEmbed.AddField("</verifyrole:1216767203043442846>", "** **", inline);
+                commandsEmbed.AddField("</eventchannel:1216767203043442846>", "** **", inline);
+                commandsEmbed.AddField("</defalutrole:0>", "** **", inline);
+                commandsEmbed.AddField("</clear:1216767203043442839>", "** **", inline);
+                commandsEmbed.AddField("</getstat:1216767203043442846>", "** **", inline);
+                commandsEmbed.AddField("</copyrole:1216767203043442846>", "** **", inline);
+                break;
+            default:
+                break;
+        }
+        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(commandsEmbed));
+    }
+     
+    [SlashCommand("credits", "Shows credits")]
+    public async Task Credits(InteractionContext ctx)
+    {
+        var creditsEmbed = new DiscordEmbedBuilder
+        {
+            Title = "Credits",
+            Description = " ",
+            Color = DiscordColor.Red,
+        };
+        int guildCount = ctx.Client.Guilds.Count;
+        creditsEmbed.AddField("I'm on ", guildCount.ToString() + " servers");
+        creditsEmbed.AddField("Created by: ", "BiznesBear");
+        creditsEmbed.AddField("Made in: ", "C# - DSharpPlus");
+        creditsEmbed.AddField("Beta tester's: ", $"Cringe2137\nDorain28029");
+        creditsEmbed.AddField("Version: ", $"Beta testing (In progress)");
+
+        var dcserverButton = new DiscordLinkButtonComponent("https://discord.gg/c9VExDxEde", "Discord server");
+        var addButton = new DiscordLinkButtonComponent("https://discord.com/api/oauth2/authorize?client_id=979004845291884584&permissions=8&scope=applications.commands%20bot", "Add me to your server");
+        var rickrollButton = new DiscordLinkButtonComponent("https://youtu.be/dQw4w9WgXcQ?si=aXEKxX-SaPoSTijV", "Click me");
+
+        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+            .AddEmbed(creditsEmbed.Build()).AddComponents(dcserverButton, addButton, rickrollButton));
     }
 
 
-    // admin
-    // admin
-    // admin
-    // admin
+    [SlashRequireOwner]
+    [SlashCommand("dev_setactivity","Nope-you cant do it")]
+    private async Task dev_setactivity(InteractionContext ctx,
+        
+        [Choice("Playing","0")]
+        [Choice("ListeningTo","2")]
+        [Choice("Watching","3")]
+        [Choice("Streaming","1")]
+        [Choice("Competeting","5")]
+        [Option("type","Select type")] string activityTypeStr,
+        [Option("activity", "What are you doing today")] string activityName,
+        [Option("streamurl","url")] string url="")
+    {
+        int activityTypeInt = int.Parse(activityTypeStr);
+        ActivityType activityType = (ActivityType)activityTypeInt;
+        
+        DiscordActivity activity = new DiscordActivity("",ActivityType.Streaming);
 
+        DiscordClient discord = ctx.Client;
+        activity.Name = activityName;
+        activity.ActivityType = activityType;
+        if(url!="")activity.StreamUrl = url;
 
-    [SlashRequireUserPermissions(Permissions.Administrator)]
-    [SlashCommand("config_botname", "Change bot name")]
+        await discord.UpdateStatusAsync(activity);
+        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                .WithContent($"Bot now {activityType} **{activityName}** ").AsEphemeral(true));
+        return;
+    }
+
+    [SlashRequireOwner]
+    [SlashCommand("dev_client", "Reset value")]
+    private async Task dev_resetvalue(InteractionContext ctx,
+        [Choice("ResetActivity","activity")]
+        [Option("value","Do something with bot")] string value)
+    {
+        switch (value)
+        {
+            case "activity":
+                await ctx.Client.UpdateStatusAsync();
+                await ctx.CreateResponseAsync("Reseted", true);
+                break;
+            default:
+                await ctx.CreateResponseAsync("Something went wrong !", true);
+                break;
+        }
+    }
+
+    public string TimestampBuilder(DateTimeOffset dateTime)
+    {
+        var timestamp = new DateTimeOffset(dateTime.Year, dateTime.Month,dateTime.Day,dateTime.Hour,dateTime.Minute,dateTime.Second, TimeSpan.Zero);
+        string formattedTimestamp = $"<t:{timestamp.ToUnixTimeSeconds()}:R>";
+        return formattedTimestamp;
+    }
+
+    public async Task HandleDropdown(ComponentInteractionCreateEventArgs e)
+    {
+        string selectedOption = e.Values.FirstOrDefault();
+        DiscordInteractionResponseBuilder responseBuilder = new DiscordInteractionResponseBuilder().AsEphemeral(true);
+        
+        switch (selectedOption)
+        {
+            case "help_commands":
+                responseBuilder.WithContent("You can also check all commands in the </commands:1178716973597732978>\nBut if you wanna check what command doing please use that command. Realy.");
+                break;
+
+            case "help_func":
+                responseBuilder.WithContent("All bot function are in commands. Like </config_eventchannel:1187109879597518869> sets the event channel (bans,new members annouce)");
+                break;
+
+            case "help_admin":
+                responseBuilder.WithContent("This is not admin bot, but have some function that helps admins stay server clear like </clear:1188445497095106560> ");
+                break;
+
+            case "help_setuping":
+                responseBuilder.WithContent("Im very helpful for creating server like </guild_copyrole:1187847895651725402> can help you with creating roles.\n or</config_verifyrole:1180824326358962196> that adds verifycation to your server");
+                break;
+            default:
+                break;
+        }
+
+        await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,responseBuilder);
+    }
+}
+
+[SlashCommandGroup("config","Config commands only for admins"),SlashCommandPermissions(Permissions.Administrator)]
+public class ConfigCommands : ApplicationCommandModule
+{
+    [SlashRequireGuild]
+    [SlashCommand("botname", "Change bot name")]
     public async Task ConfigureBotNameCommand(InteractionContext ctx, [Option("newname", "New bot name")] string newNickname)
     {
-        if (ctx.Guild == null) return;
         var guild = ctx.Guild;
         var botMember = guild.Members[ctx.Client.CurrentUser.Id];
 
@@ -511,58 +731,54 @@ public class SlashCommandsModule : ApplicationCommandModule
 
         await botMember.ModifyAsync(memberEdit => memberEdit.Nickname = newNickname);
 
-        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true)
-            .WithContent($"Chaned bot name '{oldNickname}' for '{newNickname}'."));
+        await ctx.CreateResponseAsync($"Chaned bot name '{oldNickname}' for '{newNickname}'.", true);
 
     }
 
-    [SlashCommand("config_verifyrole", "Set the verification role")]
-    [SlashRequireUserPermissions(Permissions.Administrator)]
+    [SlashCommand("verifyrole", "Set the verification role")]
+    [SlashRequireGuild]
     public async Task SetVerifyRole(InteractionContext ctx, [Option("role", "The verification role")] DiscordRole role)
     {
-        if (ctx.Guild == null) return;
-        var guildSettings = GetGuildSettings(ctx.Guild.Id);
+        var guildSettings = GuildSaver.GetGuildSettings(ctx.Guild.Id);
         guildSettings.VerifyRoleId = role.Id;
-        SaveGuildSettings(ctx.Guild.Id, guildSettings);
-        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Verification role set to {role.Name}").AsEphemeral(true));
+        GuildSaver.SaveGuildSettings(ctx.Guild.Id, guildSettings);
+        await ctx.CreateResponseAsync($"Verification role is now set to: {role.Mention}",true);
     }
 
-    [SlashRequireUserPermissions(Permissions.Administrator)]
-    [SlashCommand("config_code", "Change server code")]
-    public async Task ConfigureServerCode(InteractionContext ctx, [Option("newcode", "New code (What ever you like)")] string newCode,
-        [Option("message", "Message in the code")] string content)
+    [SlashCommand("defalutrole", "Set the defalut role for every member")]
+    [SlashRequireGuild]
+    public async Task SetDefalutRole(InteractionContext ctx, [Option("role", "The verification role")] DiscordRole role)
     {
-        if (ctx.Guild == null) return;
-        var guildSettings = GetGuildSettings(ctx.Guild.Id);
-        guildSettings.Code = newCode;
-        guildSettings.CodeContent = content;
-        SaveGuildSettings(ctx.Guild.Id, guildSettings);
-
-        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true)
-            .WithContent($"Created new code ||{guildSettings.Code} with content {guildSettings.CodeContent}||"));
-
+        var guildSettings = GuildSaver.GetGuildSettings(ctx.Guild.Id);
+        guildSettings.DefalutRoleId = role.Id;
+        GuildSaver.SaveGuildSettings(ctx.Guild.Id, guildSettings);
+        await ctx.CreateResponseAsync($"Defalut role is now set to: {role.Mention}", true);
     }
 
-    [SlashCommand("config_resetvalue", "Reset value")]
-    [SlashRequireUserPermissions(Permissions.Administrator)]
+    [SlashCommand("resetvalue", "Reset value")]
+    [SlashRequireGuild]
     public async Task ResetValue(InteractionContext ctx,
         [Choice("VerifyRole","verify")]
+        [Choice("DefalutRole","defalutrole")]
         [Choice("BotName","botname")]
         [Choice("EventChannel","event")]
-        [Choice("Code","code")]
+        [Choice("WelcomeChannel","welcome")]
         [Option("value","value to reset")] string value)
     {
-        if (ctx.Guild == null) return;
         var guild = ctx.Guild;
         var botMember = guild.Members[ctx.Client.CurrentUser.Id];
-        var guildSettings = GetGuildSettings(ctx.Guild.Id);
+        var guildSettings = GuildSaver.GetGuildSettings(ctx.Guild.Id);
         switch (value)
         {
-            case"verify":
+            case "verify":
                 guildSettings.VerifyRoleId = 0;
-                SaveGuildSettings(ctx.Guild.Id, guildSettings);
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true)
-                    .WithContent($"Verify role now is disabled (beacosue verify role equals null)"));
+                GuildSaver.SaveGuildSettings(ctx.Guild.Id, guildSettings);
+                await ctx.CreateResponseAsync("Succesful disabled verification on this server");
+                break;
+            case "defalutrole":
+                guildSettings.DefalutRoleId = 0;
+                GuildSaver.SaveGuildSettings(ctx.Guild.Id, guildSettings);
+                await ctx.CreateResponseAsync("Succesful disabled defalut role on this server");
                 break;
 
             case "botname":
@@ -570,83 +786,52 @@ public class SlashCommandsModule : ApplicationCommandModule
 
                 await botMember.ModifyAsync(memberEdit => memberEdit.Nickname = botMember.Username);
 
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true)
-                    .WithContent($"Reset bot nickname form {oldNickname}"));
+                await ctx.CreateResponseAsync($"Reset bot nickname form {oldNickname}", true);
                 break;
 
-            case "code":
-                guildSettings.Code = "";
-                guildSettings.CodeContent = "";
-                SaveGuildSettings(ctx.Guild.Id, guildSettings);
-
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true)
-                    .WithContent($"Code is not enabled from now"));
-                break;
-
-            case"event":
-                guildSettings.EventChannelID = 0;
-                SaveGuildSettings(ctx.Guild.Id, guildSettings);
+            case "event":
+                guildSettings.EventChannelId = 0;
+                GuildSaver.SaveGuildSettings(ctx.Guild.Id, guildSettings);
 
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true)
                     .WithContent($"Event channel is not enabled from now"));
+                break;
+            case "welcome":
+                guildSettings.WelcomeChannelId = 0;
+                GuildSaver.SaveGuildSettings(ctx.Guild.Id, guildSettings);
+
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true)
+                    .WithContent($"Welcome channel is not enabled from now"));
                 break;
             default:
                 break;
         }
     }
 
-    [SlashCooldown(10,5,SlashCooldownBucketType.User)]
-    [SlashCommand("verify", "Be verified")]
-    public async Task VerifyUser(InteractionContext ctx)
-    {
-        if (ctx.Guild == null) return;
-        var guildSettings = GetGuildSettings(ctx.Guild.Id);
-        //var verifyRole = ctx.Guild.Roles.Values.FirstOrDefault(role => role.Name == "Verified");
 
-        var verifyRole = ctx.Guild.GetRole(guildSettings.VerifyRoleId);
-        if (verifyRole == null)
-        {
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true)
-            .WithContent("Verification is not enabled on this server"));
-            return;
-        }
-        var hasRole = ctx.Member.Roles.Any(role => role.Id == guildSettings.VerifyRoleId);
-        if (hasRole) return;
-        await ctx.Member.GrantRoleAsync(verifyRole);
-        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true)
-            .WithContent("Now you are verified"));
-        await ctx.DeferAsync();
-    }
-
-    [SlashCommand("guild_copyrole", "Copy a role (admin only)")]
-    [SlashRequireUserPermissions(Permissions.Administrator)]
+    [SlashRequireGuild]
+    [SlashCommand("copyrole", "Copy a role (admin only)")]
     public async Task CopyRole(InteractionContext ctx, [Option("role", "Role to copy")] DiscordRole role, [Option("name", "Name for the copied role")] string roleName)
     {
-        //if (!ctx.Member.Permissions.HasPermission(Permissions.Administrator)) return;
-        if (ctx.Guild == null) return;
-
         if (role == null)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
-                .WithContent("Please specify a valid role to copy.").AsEphemeral(true));
+            await ctx.CreateResponseAsync("Please specify a valid role to copy.", true);
             return;
         }
         try
         {
             var copiedRole = await ctx.Guild.CreateRoleAsync(roleName, role.Permissions, role.Color, role.IsHoisted, role.IsMentionable);
 
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
-                .WithContent($"Role '{role.Name}' has been copied to '{copiedRole.Name}' with a new name.").AsEphemeral(true));
+            await ctx.CreateResponseAsync($"Role '{role.Name}' has been copied to '{copiedRole.Name}' with a new name.", true);
         }
         catch (Exception ex)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
-                .WithContent($"An error occurred: {ex.Message}").AsEphemeral(true));
+            await ctx.CreateResponseAsync($"An error occurred: {ex.Message}", true);
         }
     }
 
-    [SlashCooldown(1,60,SlashCooldownBucketType.Guild)]
-    [SlashCommand("guild_getstat", "Gets guild stat and send it(in file or discord message)")]
+    [SlashRequireGuild]
+    [SlashCommand("getstat", "Gets guild stat and send it(in file or discord message)")]
     public async Task GetStat(InteractionContext ctx,
         [Choice("Users-list","users")]
         [Choice("Bans-list","bans")]
@@ -655,7 +840,6 @@ public class SlashCommandsModule : ApplicationCommandModule
         [Choice("AllGuildStats","all")]
         [Option("Stat","stat")] string stat)
     {
-        if (ctx.Guild == null) return;
         await ctx.DeferAsync();
 
         var members = await ctx.Guild.GetAllMembersAsync();
@@ -665,10 +849,10 @@ public class SlashCommandsModule : ApplicationCommandModule
         var content = new StringBuilder();
         switch (stat)
         {
-            case"users": foreach (var member in members) content.AppendLine(member.Username); break;
-            case"bans": foreach (var ban in bans) content.AppendLine(ban.User.Username); break;
-            case"channels": foreach (var channel in channels) content.AppendLine(channel.Name); break;
-            case"roles": foreach (var role in roles) content.AppendLine(role.Value.Name); break;
+            case "users": foreach (var member in members) content.AppendLine(member.Username); break;
+            case "bans": foreach (var ban in bans) content.AppendLine(ban.User.Username); break;
+            case "channels": foreach (var channel in channels) content.AppendLine(channel.Name); break;
+            case "roles": foreach (var role in roles) content.AppendLine(role.Value.Name); break;
             case "all":
                 content.AppendLine($"Name: {ctx.Guild.Name}");
                 content.AppendLine($"Id: {ctx.Guild.Id}");
@@ -695,252 +879,73 @@ public class SlashCommandsModule : ApplicationCommandModule
         File.Delete(filePath);
     }
 
-    [SlashRequirePermissions(Permissions.Administrator)]
-    [SlashCommand("config_statchannel", "BETA")]
-    public async Task AddStatChannel(InteractionContext ctx,
-        [Choice("Users","users")]
-        [Choice("Bans","bans")]
-        [Option("stat","Stat")] string stat,
-        [Option("customName","Set custom name")] string customName = "")
-    {
-        if (ctx.Guild == null) return;
-        string name=stat;
-        string display="";
-        switch (stat)
-        {
-            case"users":
-                display = ctx.Guild.MemberCount.ToString();
-                break;
-            case "bans":
-                var bans = await ctx.Guild.GetBansAsync();
-                display = bans.Count.ToString();
-                break;
-            default:
-                break;
-        }
-        if (!string.IsNullOrEmpty(customName)) name = customName; 
-        var channel = await ctx.Guild.CreateVoiceChannelAsync($"{display} {name}");
-        await ctx.CreateResponseAsync($"Succesful created new stat channel ({channel.Mention}). \nIf it don't show on list please check showing that channel.",true);
-    }
 
-
-    [SlashRequirePermissions(Permissions.Administrator)]
-    [SlashCommand("config_eventchannel", "Sets new Event channel")]
-    public async Task SetEventChannel(InteractionContext ctx, 
-        [Option("channel","channel")] DiscordChannel channel)
+    [SlashRequireGuild]
+    [SlashCommand("eventchannel", "Sets new Event channel")]
+    public async Task SetEventChannel(InteractionContext ctx,
+        [Option("channel", "channel")] DiscordChannel channel)
     {
-        if (ctx.Guild == null) return;
-        var guildSettings = GetGuildSettings(ctx.Guild.Id);
-        guildSettings.EventChannelID= channel.Id;
+        var guildSettings = GuildSaver.GetGuildSettings(ctx.Guild.Id);
+        guildSettings.EventChannelId = channel.Id;
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
                 .WithContent($"Event channel is now set to the {channel.Mention}").AsEphemeral(true));
-        SaveGuildSettings(guildSettings.Id,guildSettings);
+        GuildSaver.SaveGuildSettings(guildSettings.Id, guildSettings);
     }
 
-    [SlashCommand("clear", "Clears amount of messages")]
-    public async Task Clear(InteractionContext ctx,
-        [Option("amount","Amount of messages to clear")] string amountStr)
+    [SlashRequireGuild]
+    [SlashCommand("welcomechannel", "Sets new Event channel")]
+    public async Task SetWelcomeChannel(InteractionContext ctx,
+    [Option("channel", "channel")] DiscordChannel channel)
     {
-        if (ctx.Guild == null) return;
-        int amount;
-        var channel = ctx.Channel;
-        
-        try
-        {
-            amount = int.Parse(amountStr);
-        }
-        catch (Exception)
-        {
-            throw;
-        }
-        var messages = await ctx.Channel.GetMessagesAsync(amount);
-        if (amount < 1 || amount > 100)
-        {
-            await ctx.CreateResponseAsync("Incorrect amount of messages", true);
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder());
-            return;
-        }
-        await ctx.DeferAsync();
-        try
-        {
-            await channel.DeleteMessagesAsync(messages);
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Deleted {messages.Count} messages").AsEphemeral(true));
-        }
-        catch (Exception)
-        {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Error").AsEphemeral(true));
-            throw;
-        }
+        var guildSettings = GuildSaver.GetGuildSettings(ctx.Guild.Id);
+        guildSettings.WelcomeChannelId = channel.Id;
+        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                .WithContent($"Welcome channel is now set to the {channel.Mention}").AsEphemeral(true));
+        GuildSaver.SaveGuildSettings(guildSettings.Id, guildSettings);
     }
-    //HELP
-    //HELP
-    //HELP
-    [SlashRequireOwner]
-    [SlashCommand("help","Bot help center")]
-    public async Task Help(InteractionContext ctx)
+
+
+    [SlashRequireGuild]
+    [SlashCommand("current", "Shows current config")]
+    public async Task SeeCurrentConfig(InteractionContext ctx)
     {
-        await ctx.DeferAsync();
-        var helpOptions = new List<DiscordSelectComponentOption>()
+        var guild = ctx.Guild;
+        GuildSettings guildSettings = GuildSaver.GetGuildSettings(guild.Id);
+
+        var configEmbed = new DiscordEmbedBuilder()
         {
-            new DiscordSelectComponentOption(
-                "Commands",
-                "help_commands",
-                "If you don't know!"
-                ),
-            new DiscordSelectComponentOption(
-                "Bot functions",
-                "help_func",
-                "Read how it works!"),
-            new DiscordSelectComponentOption(
-                "Admin",
-                "help_admin",
-                "Traning for admin!"),
-            new DiscordSelectComponentOption(
-                "Bot setuping",
-                "help_setuping",
-                "Try fantastic server functions!"),
+            Title = "Current config",
+            Description = "Here is the current config\nplease use </config_resetvalue:1178716973597732975> if need to reset/disable function",
+            Color = DiscordColor.Magenta
         };
 
-        // Make the dropdown
-        var helpDropdown = new DiscordSelectComponent("help_dropdown", null, helpOptions, false,1,1);
-        
-        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("How can i help you today?").AddComponents(helpDropdown));
+        var verifyRole = guild.GetRole(guildSettings.VerifyRoleId);
+        var defalutRole = guild.GetRole(guildSettings.DefalutRoleId);
+        var eventChannel = guild.GetChannel(guildSettings.EventChannelId);
+        var welcomeChannel = guild.GetChannel(guildSettings.WelcomeChannelId);
+
+        configEmbed.AddField("Server id", guildSettings.Id.ToString());
+        if (verifyRole != null) configEmbed.AddField("Verify role", verifyRole.Mention.ToString());
+        if (defalutRole != null) configEmbed.AddField("Verify role", defalutRole.Mention.ToString());
+        if (eventChannel != null) configEmbed.AddField("Event channel", eventChannel.Mention.ToString());
+        if (welcomeChannel != null) configEmbed.AddField("Welcome channel", welcomeChannel.Mention.ToString());
+
+        await ctx.CreateResponseAsync(configEmbed.Build(), true);
     }
-    [SlashCommand("commands", "Show's all commands")]
-    public async Task Commands(InteractionContext ctx)
-    {
-        var commandshelpEmbed = new DiscordEmbedBuilder
-        {
-            Title = "Command's list",
-            Color = DiscordColor.Cyan,
-        };
-        //commandshelpEmbed.AddField("CATEGORY NAME","DESCRIPTION");
-        //commandshelpEmbed.AddField("</command:000>", "** **",true);
+}
 
-        commandshelpEmbed.AddField("COMMON", "common commands (not admin)");
-        commandshelpEmbed.AddField("</help:1181276215122866318>", "** **", true);
-        commandshelpEmbed.AddField("</commands:1178716973597732978>", "** **", true);
-        commandshelpEmbed.AddField("</ping:1178716973438353515>", "** **", true);
-        commandshelpEmbed.AddField("</credits:1178716973597732979>", "** **", true);
-        commandshelpEmbed.AddField("</verify:1178716973597732976>", "** **", true);
-        commandshelpEmbed.AddField("</suggest:1181276215122866317>", "** **", true);
-        commandshelpEmbed.AddField("</user_info:1178716973438353513>", "** **", true);
-        commandshelpEmbed.AddField("</server_info:1178716973438353512>", "** **", true);
-        commandshelpEmbed.AddField("</role_info:1178716973438353514>", "** **", true);
-        commandshelpEmbed.AddField("</dotart:1178716973438353508>", "** **", true);
-        commandshelpEmbed.AddField("</embed:1178716973438353509>", "** **", true);
-        commandshelpEmbed.AddField("</code:1178716973597732981>", "** **", true);
-
-        commandshelpEmbed.AddField("GUILD", "guild commands");
-        commandshelpEmbed.AddField("</guild_getstat:1187847895651725403>", "** **", true);
-        commandshelpEmbed.AddField("</guild_copyrole:1187847895651725402>", "(admin only)", true);
-
-        commandshelpEmbed.AddField("ADMIN", "admin commands only");
-        commandshelpEmbed.AddField("</clear:1188445497095106560>", "** **", true);
-
-        commandshelpEmbed.AddField("BOT CONFIG", "admin only");
-        commandshelpEmbed.AddField("</config_resetvalue:1178716973597732975>", "** **", true);
-        commandshelpEmbed.AddField("</config_botname:1178716973438353516>", "** **", true);
-        commandshelpEmbed.AddField("</config_code:1180824326358962197>", "** **", true);
-        commandshelpEmbed.AddField("</config_verifyrole:1180824326358962196>", "** **", true);
-        commandshelpEmbed.AddField("</config_eventchannel:1187109879597518869>", "** **", true);
-        commandshelpEmbed.AddField("</config_statchannel:1187847895651725404>", "** **", true);
-
-        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
-            .AddEmbed(commandshelpEmbed.Build()));
-    }
-     
-    [SlashCommand("credits", "Shows credits")]
-    public async Task Credits(InteractionContext ctx)
-    {
-        var creditsEmbed = new DiscordEmbedBuilder
-        {
-            Title = "Credits",
-            Description = " ",
-            Color = DiscordColor.Red,
-        };
-        int guildCount = ctx.Client.Guilds.Count;
-        creditsEmbed.AddField("I'm on ", guildCount.ToString() + " servers");
-        creditsEmbed.AddField("Created by: ", "BiznesBear");
-        creditsEmbed.AddField("Made in: ", "C# - DSharpPlus");
-        creditsEmbed.AddField("Beta tester's: ", $"Cringe2137\nDorain28029");
-        creditsEmbed.AddField("About: ", $"Version: Beta testing");
-
-        var dcserverButton = new DiscordLinkButtonComponent("https://discord.gg/c9VExDxEde", "Discord server");
-        var addButton = new DiscordLinkButtonComponent("https://discord.com/api/oauth2/authorize?client_id=979004845291884584&permissions=8&scope=applications.commands%20bot", "Add me to your server");
-        var rickrollButton = new DiscordLinkButtonComponent("https://youtu.be/dQw4w9WgXcQ?si=aXEKxX-SaPoSTijV", "Click me");
-
-        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
-            .AddEmbed(creditsEmbed.Build()).AddComponents(dcserverButton, addButton, rickrollButton));
-    }
-
-    // dev center 
-    // dev center 
-    // dev center 
-
-    [SlashRequireOwner]
-    [SlashCommand("dev_setactivity","Nope-you cant do it")]
-    private async Task setactivity(InteractionContext ctx,
-        
-        [Choice("Playing","0")]
-        [Choice("ListeningTo","2")]
-        [Choice("Watching","3")]
-        [Choice("Competeting","5")]
-        [Option("type","Select type")] string activityTypeStr,
-        [Option("activity", "What are you doing today")] string activityName,
-        [Choice("online","1")]
-        [Choice("idle","2")]
-        [Choice("doNotDisturb","4")]
-        [Choice("invisible","5")]
-        [Option("status","status")] string status="")
-    {
-        int activityTypeInt = int.Parse(activityTypeStr);
-        ActivityType activityType = (ActivityType)activityTypeInt;
-        
-        DiscordActivity activity = new DiscordActivity("",ActivityType.Streaming);
-        UserStatus clientStatus = UserStatus.Online;
-        DiscordClient discord = ctx.Client;
-        activity.Name = activityName;
-        activity.ActivityType = activityType;
-        if (string.IsNullOrEmpty(status))
-        {
-            int statusIndex = int.Parse(status);
-            clientStatus = (UserStatus)statusIndex;
-        }
-
-        await discord.UpdateStatusAsync(activity,clientStatus);
-        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
-                .WithContent($"Bot now {activityType} **{activityName}** ").AsEphemeral(true));
-        return;
-    }
-
-
-    // beta functions 
-    // beta functions 
-    // beta functions 
-
-    [SlashRequireOwner]
-    [SlashCommand("testing","Dev test command")]
-    public async Task Testing(InteractionContext ctx)
-    {
-        await ctx.CreateResponseAsync("Nothing here",true);
-    }
-
-
-    // CONTEX MENUS
-    // CONTEX MENUS
-    // CONTEX MENUS
-    // CONTEX MENUS
-
-
-
-    // OTHER
-    // OTHER 
-    // OTHER
-
-
+public class GuildSettings
+{
+    public ulong Id { get; set; }
+    public ulong VerifyRoleId { get; set; }
+    public ulong DefalutRoleId { get; set; }
+    public ulong EventChannelId { get; set; }
+    public ulong WelcomeChannelId { get; set; }
+}
+public static class GuildSaver
+{
     public static string SettingsFilePath = "guild_settings.json";
-    public GuildSettings GetGuildSettings(ulong guildId)
+    public static GuildSettings GetGuildSettings(ulong guildId)
     {
         if (File.Exists(SettingsFilePath))
         {
@@ -949,62 +954,15 @@ public class SlashCommandsModule : ApplicationCommandModule
         }
         else
         {
-            return new GuildSettings { Id = guildId, VerifyRoleId = 0, EventChannelID = 0 , Code = "",CodeContent=""};
+            return new GuildSettings { Id = guildId, VerifyRoleId = 0, DefalutRoleId = 0,EventChannelId = 0, WelcomeChannelId = 0 };
         }
     }
 
-    public void SaveGuildSettings(ulong guildId, GuildSettings settings)
+    public static void SaveGuildSettings(ulong guildId, GuildSettings settings)
     {
         var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
         File.WriteAllText(SettingsFilePath, json);
     }
-
-    public string TimestampBuilder(DateTimeOffset dateTime)
-    {
-        var timestamp = new DateTimeOffset(dateTime.Year, dateTime.Month,dateTime.Day,dateTime.Hour,dateTime.Minute,dateTime.Second, TimeSpan.Zero);
-        string formattedTimestamp = $"<t:{timestamp.ToUnixTimeSeconds()}:R>";
-        return formattedTimestamp;
-    }
-
-
-    public async Task HandleDropdown(ComponentInteractionCreateEventArgs e)
-    {
-        string selectedOption = e.Values.FirstOrDefault();
-        var dropdownEmbed = new DiscordEmbedBuilder
-        {
-            Color = DiscordColor.Cyan
-        };
-        string message = "";
-        switch (selectedOption)
-        {
-            case "help_commands":
-                message = "";
-                dropdownEmbed.WithTitle("Commands");
-                dropdownEmbed.WithDescription("</commands:1178716973597732978>");
-                break;
-
-            case "help_func":
-                message = "Try out functions ! ";
-                dropdownEmbed.WithTitle("Bot functions");
-                dropdownEmbed.AddField("","");
-                break;
-
-            case "help_admin":
-                message = "Admins tutorial";
-                dropdownEmbed.WithTitle("Bot functions");
-                dropdownEmbed.AddField("", "");
-                break;
-
-            case "help_setuping":
-                message = "Setuping for owners";
-                dropdownEmbed.WithTitle("Bot functions");
-                dropdownEmbed.AddField("", "");
-                break;
-            default:
-                message = "Don't working";
-                break;
-        }
-        await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,
-                    new DiscordInteractionResponseBuilder().WithContent(message).AddEmbed(dropdownEmbed));
-    }
 }
+
+

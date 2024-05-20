@@ -20,8 +20,6 @@
     <PackageReference Include="DSharpPlus" Version="4.4.6" />
     <PackageReference Include="DSharpPlus.Interactivity" Version="4.4.6" />
     <PackageReference Include="DSharpPlus.SlashCommands" Version="4.4.6" />
-    <PackageReference Include="Google.Apis.CloudNaturalLanguage.v1" Version="1.64.0.3130" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.64.0.3205" />
   </ItemGroup>
 
 </Project>
