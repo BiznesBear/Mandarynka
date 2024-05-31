@@ -60,15 +60,15 @@ namespace Mandarynka
         [Option("field5", "Separe title & description with ;| Example: My Title;Here is my description")] string field5 = "",
         [Option("field6", "Separe title & description with ;| Example: My Title;Here is my description")] string field6 = "",
         [Choice("Black","0;0;0")]
-    [Choice("Gray","128;128;128")]
-    [Choice("White","255;255;255")]
-    [Choice("Red","230;0;0")]
-    [Choice("Green","0;230;0")]
-    [Choice("Blue","0;0;230")]
-    [Choice("Yellow","230;230;0")]
-    [Choice("Aqua/Cyan","0;230;230")]
-    [Choice("Purple","128;0;128")]
-    [Option("color", "Set's the annoucment color from choice")] string color = "",
+        [Choice("Gray","128;128;128")]
+        [Choice("White","255;255;255")]
+        [Choice("Red","230;0;0")]
+        [Choice("Green","0;230;0")]
+        [Choice("Blue","0;0;230")]
+        [Choice("Yellow","230;230;0")]
+        [Choice("Aqua/Cyan","0;230;230")]
+        [Choice("Purple","128;0;128")]
+        [Option("color", "Set's the annoucment color from choice")] string color = "",
         [Option("colorRGB", "Set's the annoucment color with RGB | Exaple: 100;200;255")] string colorRGB = "")
         {
             if (!ctx.Member.Permissions.HasPermission(Permissions.Administrator)) return;
@@ -317,20 +317,20 @@ namespace Mandarynka
             await ctx.DeferAsync();
             var helpOptions = new List<DiscordSelectComponentOption>()
         {
-            new DiscordSelectComponentOption(
+            new (
                 "Commands",
                 "help_commands",
                 "If you don't know!"
                 ),
-            new DiscordSelectComponentOption(
+            new (
                 "Bot functions",
                 "help_func",
                 "Read how it works!"),
-            new DiscordSelectComponentOption(
+            new (
                 "Admin",
                 "help_admin",
                 "Admin commands and tricks!"),
-            new DiscordSelectComponentOption(
+            new (
                 "Bot setuping",
                 "help_setuping",
                 "Try fantastic server functions!"),
@@ -419,11 +419,11 @@ namespace Mandarynka
         private async Task dev_setactivity(InteractionContext ctx,
 
             [Choice("Playing","0")]
-        [Choice("ListeningTo","2")]
-        [Choice("Watching","3")]
-        [Choice("Streaming","1")]
-        [Choice("Competeting","5")]
-        [Option("type","Select type")] string activityTypeStr,
+            [Choice("ListeningTo","2")]
+            [Choice("Watching","3")]
+            [Choice("Streaming","1")]
+            [Choice("Competeting","5")]
+            [Option("type","Select type")] string activityTypeStr,
             [Option("activity", "What are you doing today")] string activityName,
             [Option("streamurl", "url")] string url = "")
         {
@@ -515,18 +515,27 @@ namespace Mandarynka
             search.MaxResults = 1;
             var result = search.Execute();
             var first = result.Items.First().Snippet;
+            string link = result.Items.First().Id.VideoId;
+
+            var videoRequest = youtubeService.Videos.List("statistics");
+            videoRequest.Id = link;
+            search.MaxResults = 1;
+            var videoResponse = videoRequest.Execute();
+            var stats = videoResponse.Items.First().Statistics;
 
             await ctx.DeferAsync();
 
             DiscordEmbedBuilder youtubeVideoEmbed = new DiscordEmbedBuilder()
             {
                 Title = first.Title,
+                Url = $"https://www.youtube.com/watch?v={link}",
                 Description = first.Description,
                 ImageUrl = first.Thumbnails.Medium.Url,
                 Timestamp = first.PublishedAtDateTimeOffset,
                 Color = DiscordColor.Red
             };
-            youtubeVideoEmbed.AddField("Author: " + first.ChannelTitle.ToString(), first.ChannelId);
+            youtubeVideoEmbed.WithAuthor(first.ChannelTitle.ToString(), $"https://www.youtube.com/channel/{first.ChannelId}");
+            youtubeVideoEmbed.AddField("Stats", $"Views: {stats.ViewCount}\nLikes: {stats.LikeCount}\nComments: {stats.CommentCount}");
 
 
             await ctx.FollowUpAsync(followup.AddEmbed(youtubeVideoEmbed));

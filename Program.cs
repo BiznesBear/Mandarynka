@@ -9,8 +9,8 @@ namespace Mandarynka
 {
     class Program
     {
-        private static readonly string token = "OTc5MDA0ODQ1MjkxODg0NTg0.GsJwpe.90S6qAaaygAiUeaAZnp0KHpJNmcH0GvjdgI5oA";
-        internal static readonly string youtubeKey = "AIzaSyCSYhCLlyS2TnXOc99za1BTydmNKey0e0w";
+        private static readonly string token = "";
+        internal static readonly string youtubeKey = "";
 
         static void NewConsole() { Console.WriteLine($"||WELCOME TO MANDARYNKA CONSOLE\n||CREATED BY: (C)BIZNESBEAR 2023\n||PLEASE ENTER A COMMAND OR TYPE help FOR COMMAND LIST\n||Environment version: {Environment.Version}"); }
         static async Task Main(string[] args)
