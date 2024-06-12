@@ -268,8 +268,8 @@ public class BasicCommands : ApplicationCommandModule
         await ctx.CreateResponseAsync($"Pong! Current ping is {ping} ms", true);
     }
 
-    
-    
+
+
 
     [SlashRequireGuild]
     [SlashCommand("verify", "Be verified")]

@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="mandarynka-withportraint.ico" />
+    <Content Include="Images\mandarynka-withportraint.ico" />
   </ItemGroup>
 
   <ItemGroup>
