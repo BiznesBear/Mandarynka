@@ -17,10 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.4.9" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.4.9" />
-    <PackageReference Include="DSharpPlus.SlashCommands" Version="4.4.9" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.68.0.3421" />
+    <PackageReference Include="DSharpPlus" Version="4.5.0" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.5.0" />
+    <PackageReference Include="DSharpPlus.SlashCommands" Version="4.5.0" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.68.0.3556" />
   </ItemGroup>
 
 </Project>

@@ -35,7 +35,6 @@ internal class Program
 
         #endregion
         
-        
         #region Console
         Console.Title = "Mandarynka Console";
         NewConsole();
@@ -50,8 +49,8 @@ internal class Program
                     Log($"Command list:" +
                         $"\n≫ exit/close -- closes the console and shut down the bot" +
                         $"\n≫ clear -- clears console" +
-                        $"\n≫ client [restart/disconnect/connect] -- does exacly what it says" +
-                        $"\n≫ setactivity [value] [index] -- sets bot activity" +
+                        $"\n≫ restart/disconnect/connect -- does exacly what it says" +
+                        $"\n≫ setactivity [index] [value] -- sets bot activity" +
                         $"\n≫ activities -- shows list of activities");
                     break;
                 case "exit" or "close":
@@ -66,9 +65,9 @@ internal class Program
                 case "restart":
                     Log("Restarting...");
                     await DiscordClient.DisconnectAsync();
-                    Thread.Sleep(3000);
+                    Thread.Sleep(1500);
                     await DiscordClient.ConnectAsync();
-                    Thread.Sleep(3000);
+                    Thread.Sleep(4000);
                     Log("Restarted");
                     break;
                 case "disconnect":
@@ -83,15 +82,14 @@ internal class Program
                 case "setactivity":
                     if (raw.Length < 3) { Console.WriteLine("Nothing happends"); continue; } 
                     DiscordActivity activity = new DiscordActivity("", ActivityType.Playing);
-                    activity.Name = raw[1];
-                    activity.ActivityType = (ActivityType)int.Parse(raw[2]);
+                    activity.Name = raw[2];
+                    activity.ActivityType = (ActivityType)int.Parse(raw[1]);
                     await DiscordClient.UpdateStatusAsync(activity);
                     break;
                 case "activities":
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    Console.WriteLine("List of activities:");
-                    foreach (ActivityType act in (ActivityType[])Enum.GetValues(typeof(ActivityType))) Console.WriteLine($"≫ {(int)act} - {act.ToString()}");
-                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Log("List of activities:");
+                    foreach (ActivityType act in (ActivityType[])Enum.GetValues(typeof(ActivityType))) 
+                        Log($"≫ {(int)act} - {act.ToString()}");
                     break;
                 case "":
                     break;

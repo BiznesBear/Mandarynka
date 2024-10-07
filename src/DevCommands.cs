@@ -8,7 +8,7 @@ namespace Mandarynka;
 public class DevCommands : ApplicationCommandModule
 {
     [SlashRequireOwner]
-    [SlashCommand("dev_setactivity", "Nope-you cant do it")]
+    [SlashCommand("setactivity", "Nope-you cant do it")]
     internal static async Task DevSetActivity(InteractionContext ctx,
 
         [Choice("Playing","0")]
@@ -37,7 +37,7 @@ public class DevCommands : ApplicationCommandModule
     }
 
     [SlashRequireOwner]
-    [SlashCommand("dev_client", "Reset value")]
+    [SlashCommand("client", "Reset value")]
     internal async Task DevResetValue(InteractionContext ctx,
         [Choice("ResetActivity","activity")]
         [Option("value","Do something with bot")] string value)

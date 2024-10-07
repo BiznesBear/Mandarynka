@@ -117,9 +117,7 @@ internal static class Events
         Program.DiscordClient.ComponentInteractionCreated += async (s, e) =>
         {
             if (e.Id == "help_dropdown")
-            {
                 await Tools.HandleDropdown(e);
-            }
 
             await e.Interaction.CreateResponseAsync(
             InteractionResponseType.UpdateMessage,
