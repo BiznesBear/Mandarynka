@@ -424,5 +424,15 @@ internal class BasicCommands : ApplicationCommandModule
         await ctx.FollowUpAsync(followup.AddEmbed(youtubeVideoEmbed));
     }
 
+
+
+    [SlashCommand("halloween", "A spooky command")]
+    internal async Task Halloween(InteractionContext ctx)
+    {
+        await ctx.CreateResponseAsync("https://tenor.com/view/i-love-tangerines-tangerine-oranges-citrus-fruit-gif-1410742271454258105");
+    }
+
+
+
     #endregion
 }
