@@ -7,6 +7,7 @@ using DSharpPlus.SlashCommands;
 namespace Mandarynka;
 internal class Program
 {
+
     internal static DiscordClient DiscordClient { get; private set; } = new(new DiscordConfiguration
     {
         Token = Keys.BotToken,
@@ -14,6 +15,7 @@ internal class Program
         Intents = DiscordIntents.All,
         MinimumLogLevel = Microsoft.Extensions.Logging.LogLevel.Critical,
     });
+
     private static async Task Main(string[] args)
     {
         #region Startup
@@ -22,7 +24,8 @@ internal class Program
         //register commands
         var slashCommands = DiscordClient.UseSlashCommands();
         slashCommands.RegisterCommands<BasicCommands>();
-        slashCommands.RegisterCommands<ConfigCommands>();
+        slashCommands.RegisterCommands<InfoCommands>();
+        // slashCommands.RegisterCommands<ConfigCommands>(); // terminated
         slashCommands.RegisterCommands<DevCommands>();
 
         await DiscordClient.ConnectAsync();
@@ -36,7 +39,8 @@ internal class Program
         #endregion
         
         #region Console
-        Console.Title = "Mandarynka Console";
+        
+
         NewConsole();
         while (true)
         {
@@ -50,8 +54,8 @@ internal class Program
                         $"\n≫ exit/close -- closes the console and shut down the bot" +
                         $"\n≫ clear -- clears console" +
                         $"\n≫ restart/disconnect/connect -- does exacly what it says" +
-                        $"\n≫ setactivity [index] [value] -- sets bot activity" +
-                        $"\n≫ activities -- shows list of activities");
+                        $"\n≫ set [index] [value] -- sets bot activity" +
+                        $"\n≫ list -- shows list of activities");
                     break;
                 case "exit" or "close":
                     await DiscordClient.DisconnectAsync();
@@ -63,35 +67,25 @@ internal class Program
                     NewConsole();
                     break;
                 case "restart":
-                    Log("Restarting...");
-                    await DiscordClient.DisconnectAsync();
-                    Thread.Sleep(1500);
-                    await DiscordClient.ConnectAsync();
-                    Thread.Sleep(4000);
-                    Log("Restarted");
+                    await Restart();
                     break;
                 case "disconnect":
-                    await DiscordClient.DisconnectAsync();
-                    Log("Disconnected");
+                    Disconnect();
                     break;
                 case "connect":
-                    await DiscordClient.ConnectAsync();
-                    Thread.Sleep(3000);
-                    Log("Connected");
+                    await Connect();
                     break;
-                case "setactivity":
+                case "set":
                     if (raw.Length < 3) { Console.WriteLine("Nothing happends"); continue; } 
                     DiscordActivity activity = new DiscordActivity("", ActivityType.Playing);
                     activity.Name = raw[2];
                     activity.ActivityType = (ActivityType)int.Parse(raw[1]);
                     await DiscordClient.UpdateStatusAsync(activity);
                     break;
-                case "activities":
+                case "list":
                     Log("List of activities:");
                     foreach (ActivityType act in (ActivityType[])Enum.GetValues(typeof(ActivityType))) 
                         Log($"≫ {(int)act} - {act.ToString()}");
-                    break;
-                case "":
                     break;
                 default:
                     Warring($"Incorrect command: {raw[0]}");
@@ -99,6 +93,28 @@ internal class Program
             }
         }
         #endregion
+    }
+
+
+    public static async Task Restart()
+    {
+        Log("Restarting...");
+        await DiscordClient.DisconnectAsync();
+        Thread.Sleep(1000);
+        await DiscordClient.ConnectAsync();
+        Thread.Sleep(5000);
+        Log("Restarted");
+    }
+    public static async Task Disconnect()
+    {
+        await DiscordClient.DisconnectAsync();
+        Log("Disconnected");
+    }
+    public static async Task Connect()
+    {
+        await DiscordClient.ConnectAsync();
+        Thread.Sleep(3000);
+        Log("Connected");
     }
 
     public static void Log(string message)

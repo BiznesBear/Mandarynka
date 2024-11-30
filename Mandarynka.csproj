@@ -20,7 +20,7 @@
     <PackageReference Include="DSharpPlus" Version="4.5.0" />
     <PackageReference Include="DSharpPlus.Interactivity" Version="4.5.0" />
     <PackageReference Include="DSharpPlus.SlashCommands" Version="4.5.0" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.68.0.3556" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.68.0.3608" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,5 @@
 # Mandarynka
-Discord bot created in DSharpPlus.
+Discord bot created in DSharpPlus. This repo is trash.
 
 # Commands
 ## Basic 
@@ -11,24 +11,18 @@ Discord bot created in DSharpPlus.
 
 `role_info` - sends info about role
 
-
 `user_info` - sends info about user
 
 `ping` - sends info about current bot ping
 
-`verify` - verify user with role (if enabled)
-
 `clear` - clears a specified number of messages
-
-`help` - shows help with bot
-
-`commands` - shows list of commands
 
 `youtube` - search video on youtube
 
 
-## Config
+## Config (This section was terminated by bugs)
 All of these starts with: `config `
+
 `botname` - sets new bot name
 
 `verifyrole` - sets verify role for guild
@@ -47,11 +41,17 @@ All of these starts with: `config `
 
 `current` - shows current config
 
+
+
+## Trash (also unaviable now)
+`help` - shows help with bot
+`verify` - verify user with role (if enabled)
+`commands` - shows list of commands
+
 ## Dev
-`dev_setactivity` - sets activity of bot
+`dev setactivity` - sets activity of bot
 
-
-`dev_resetvalue` - resets one value of dev bot config
+`dev client` - resets one value of dev bot config
 
 # Console commands
 `help` - shows list of commands
@@ -62,7 +62,7 @@ All of these starts with: `config `
 
 `client [restart/disconnect/connect]` - restarst/disconnects/connects the bot
 
-`setactivity ` - sets bot activity
+`set ` - sets bot activity
 
-`activities ` - shows list of all aviable activities
+`list ` - shows list of all aviable activities
 

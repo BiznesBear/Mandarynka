@@ -11,40 +11,7 @@ namespace Mandarynka;
 public class ConfigCommands : ApplicationCommandModule
 {
     #region ConfigCommands
-    [SlashRequireGuild]
-    [SlashCommand("botname", "Change bot name")]
-    internal async Task ConfigureBotNameCommand(InteractionContext ctx, [Option("newname", "New bot name")] string newNickname)
-    {
-        var guild = ctx.Guild;
-        var botMember = guild.Members[ctx.Client.CurrentUser.Id];
-
-        var oldNickname = botMember.Nickname;
-
-        await botMember.ModifyAsync(memberEdit => memberEdit.Nickname = newNickname);
-
-        await ctx.CreateResponseAsync($"Chaned bot name '{oldNickname}' for '{newNickname}'.", true);
-
-    }
-
-    [SlashCommand("verifyrole", "Set the verification role")]
-    [SlashRequireGuild]
-    internal async Task SetVerifyRole(InteractionContext ctx, [Option("role", "The verification role")] DiscordRole role)
-    {
-        var guildSettings = GuildSaver.GetGuildSettings(ctx.Guild.Id);
-        guildSettings.VerifyRoleId = role.Id;
-        GuildSaver.SaveGuildSettings(ctx.Guild.Id, guildSettings);
-        await ctx.CreateResponseAsync($"Verification role is now set to: {role.Mention}", true);
-    }
-
-    [SlashCommand("defalutrole", "Set the defalut role for every member")]
-    [SlashRequireGuild]
-    internal async Task SetDefalutRole(InteractionContext ctx, [Option("role", "The verification role")] DiscordRole role)
-    {
-        var guildSettings = GuildSaver.GetGuildSettings(ctx.Guild.Id);
-        guildSettings.DefalutRoleId = role.Id;
-        GuildSaver.SaveGuildSettings(ctx.Guild.Id, guildSettings);
-        await ctx.CreateResponseAsync($"Defalut role is now set to: {role.Mention}", true);
-    }
+    
 
     [SlashCommand("resetvalue", "Reset value")]
     [SlashRequireGuild]
@@ -100,31 +67,46 @@ public class ConfigCommands : ApplicationCommandModule
     }
 
 
-    [SlashRequireGuild]
-    [SlashCommand("copyrole", "Copy a role (admin only)")]
-    internal async Task CopyRole(InteractionContext ctx, [Option("role", "Role to copy")] DiscordRole role, [Option("name", "Name for the copied role")] string roleName)
-    {
-        if (role == null)
-        {
-            await ctx.CreateResponseAsync("Please specify a valid role to copy.", true);
-            return;
-        }
-        try
-        {
-            var copiedRole = await ctx.Guild.CreateRoleAsync(roleName, role.Permissions, role.Color, role.IsHoisted, role.IsMentionable);
 
-            await ctx.CreateResponseAsync($"Role '{role.Name}' has been copied to '{copiedRole.Name}' with a new name.", true);
-        }
-        catch (Exception ex)
-        {
-            await ctx.CreateResponseAsync($"An error occurred: {ex.Message}", true);
-        }
+    [SlashRequireGuild]
+    [SlashCommand("botname", "Change bot name")]
+    internal async Task ConfigureBotNameCommand(InteractionContext ctx, [Option("newname", "New bot name")] string newNickname)
+    {
+        var guild = ctx.Guild;
+        var botMember = guild.Members[ctx.Client.CurrentUser.Id];
+
+        var oldNickname = botMember.Nickname;
+
+        await botMember.ModifyAsync(memberEdit => memberEdit.Nickname = newNickname);
+
+        await ctx.CreateResponseAsync($"Chaned bot name '{oldNickname}' for '{newNickname}'.", true);
+
+    }
+
+    [SlashCommand("verifyrole", "Set the verification role")]
+    [SlashRequireGuild]
+    internal async Task SetVerifyRole(InteractionContext ctx, [Option("role", "The verification role")] DiscordRole role)
+    {
+        var guildSettings = GuildSaver.GetGuildSettings(ctx.Guild.Id);
+        guildSettings.VerifyRoleId = role.Id;
+        GuildSaver.SaveGuildSettings(ctx.Guild.Id, guildSettings);
+        await ctx.CreateResponseAsync($"Verification role is now set to: {role.Mention}", true);
+    }
+
+    [SlashCommand("defalutrole", "Set the defalut role for every member")]
+    [SlashRequireGuild]
+    internal async Task SetDefalutRole(InteractionContext ctx, [Option("role", "The verification role")] DiscordRole role)
+    {
+        var guildSettings = GuildSaver.GetGuildSettings(ctx.Guild.Id);
+        guildSettings.DefalutRoleId = role.Id;
+        GuildSaver.SaveGuildSettings(ctx.Guild.Id, guildSettings);
+        await ctx.CreateResponseAsync($"Defalut role is now set to: {role.Mention}", true);
     }
 
     [SlashRequireGuild]
     [SlashCommand("getstat", "Gets guild stat and send it(in file or discord message)")]
     internal async Task GetStat(InteractionContext ctx,
-        [Choice("Users-list","users")]
+       [Choice("Users-list","users")]
         [Choice("Bans-list","bans")]
         [Choice("Channels-list","channels")]
         [Choice("Roles-list","roles")]
@@ -170,6 +152,7 @@ public class ConfigCommands : ApplicationCommandModule
         await ctx.FollowUpAsync(followup.WithContent($"The users list of {ctx.Guild.Name}:").AddFile(fileStream));
         File.Delete(filePath);
     }
+
 
 
     [SlashRequireGuild]

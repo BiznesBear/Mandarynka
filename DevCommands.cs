@@ -4,12 +4,13 @@ using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 
 namespace Mandarynka;
+
 [SlashCommandGroup("dev","command developers")]
 public class DevCommands : ApplicationCommandModule
 {
     [SlashRequireOwner]
     [SlashCommand("setactivity", "Nope-you cant do it")]
-    internal static async Task DevSetActivity(InteractionContext ctx,
+    internal async Task DevSetActivity(InteractionContext ctx,
 
         [Choice("Playing","0")]
             [Choice("ListeningTo","2")]
@@ -37,9 +38,10 @@ public class DevCommands : ApplicationCommandModule
     }
 
     [SlashRequireOwner]
-    [SlashCommand("client", "Reset value")]
-    internal async Task DevResetValue(InteractionContext ctx,
+    [SlashCommand("client", "Manage bot")]
+    internal async Task DevClient(InteractionContext ctx,
         [Choice("ResetActivity","activity")]
+        [Choice("RestartBot","restart")]
         [Option("value","Do something with bot")] string value)
     {
         switch (value)
@@ -47,6 +49,10 @@ public class DevCommands : ApplicationCommandModule
             case "activity":
                 await ctx.Client.UpdateStatusAsync();
                 await ctx.CreateResponseAsync("Reseted", true);
+                break;
+            case "restart":
+                await ctx.CreateResponseAsync("Restarting", true);
+                await Program.Restart();
                 break;
             default:
                 await ctx.CreateResponseAsync("Something went wrong !", true);
